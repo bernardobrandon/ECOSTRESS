@@ -1,0 +1,162 @@
+setwd("~/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data")
+
+# read in csv files --- includes ETcanopy, ETdaily, ETinst, for ET and WUE separate 
+ANK01_all_ET = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/ANK01-ECO3ETPTJPL-001-Statistics (6).csv")
+ANK01_all_WUE = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/ANK01-WUE-ECO4WUE-001-Statistics (3).csv")
+ANK03_all_ET = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/ANK03-ECO3ETPTJPL-001-Statistics (6).csv")
+ANK03_all_WUE = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/ANK03-WUE-ECO4WUE-001-Statistics (2).csv")
+BOB01_all_ET = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/BOB01-ECO3ETPTJPL-001-Statistics (6).csv")
+BOB01_all_WUE = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/BOB01-WUE-ECO4WUE-001-Statistics (5).csv")
+BOB02_all_ET = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/BOB02-ET-ECO3ETPTJPL-001-Statistics (9).csv")
+BOB02_all_WUE = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/BOB02-WUE-ECO4WUE-001-Statistics (8).csv")
+KOG01_all_ET = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/KOG01-ECO3ETPTJPL-001-Statistics (6).csv")
+KOG01_all_WUE = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/KOG01-WUE-ECO4WUE-001-Statistics (6).csv")
+KOG03_all_ET = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/KOG03-ECO3ETPTJPL-001-Statistics (6).csv")
+KOG03_all_WUE = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/KOG03-WUE-ECO4WUE-001-Statistics (4).csv")
+KOG04_all_ET = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/KOG04-ET-ECO3ETPTJPL-001-Statistics (8).csv")
+KOG04_all_WUE = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Ghana/Sites_Data/KOG04-WUE-ECO4WUE-001-Statistics (7).csv")
+
+# assign Site column
+ANK01_all_ET$Site = "ANK01"
+ANK01_all_WUE$Site = "ANK01"
+ANK03_all_ET$Site = "ANK03"
+ANK03_all_WUE$Site = "ANK03"
+BOB01_all_ET$Site = "BOB01"
+BOB01_all_WUE$Site = "BOB01"
+BOB02_all_ET$Site = "BOB02"
+BOB02_all_WUE$Site = "BOB02"
+KOG01_all_ET$Site = "KOG01"
+KOG01_all_WUE$Site = "KOG01"
+KOG03_all_ET$Site = "KOG03"
+KOG03_all_WUE$Site = "KOG03"
+KOG04_all_ET$Site = "KOG04"
+KOG04_all_WUE$Site = "KOG04"
+
+# create $date and $m_d for ET and WUE
+all_data_Ghana_ET = rbind(ANK01_all_ET, ANK03_all_ET, BOB01_all_ET, BOB02_all_ET, KOG01_all_ET, KOG03_all_ET, KOG04_all_ET)
+all_data_Ghana_WUE = rbind(ANK01_all_WUE, ANK03_all_WUE, BOB01_all_WUE, BOB02_all_WUE, KOG01_all_WUE, KOG03_all_WUE, KOG04_all_WUE)
+
+all_data_Ghana_ET$date = as_datetime(all_data_Ghana_ET$Date)
+all_data_Ghana_ET = separate(data=all_data_Ghana_ET,col=date,into=c("date","time"), sep =" ")
+all_data_Ghana_WUE$date = as_datetime(all_data_Ghana_WUE$Date)
+all_data_Ghana_WUE = separate(data=all_data_Ghana_WUE,col=date,into=c("date","time"), sep =" ")
+
+n_last = 5
+all_data_Ghana_ET$m_d = substr(all_data_Ghana_ET$date, nchar(all_data_Ghana_ET$date) - n_last + 1, nchar(all_data_Ghana_ET$date))
+all_data_Ghana_WUE$m_d = substr(all_data_Ghana_WUE$date, nchar(all_data_Ghana_WUE$date) - n_last + 1, nchar(all_data_Ghana_WUE$date))
+
+# separate into canopy, daily, inst - ET
+all_Ghana_ETcanopy = all_data_Ghana_ET[which(all_data_Ghana_ET$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+all_Ghana_ETdaily = all_data_Ghana_ET[which(all_data_Ghana_ET$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+all_Ghana_ETinst = all_data_Ghana_ET[which(all_data_Ghana_ET$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETinst"),]
+
+tail(all_data[order(all_data_Ghana_WUE$date),])
+
+################## ET GRAPHS 
+#boxplots
+boxplot_Ghana_ETdaily = ggplot(all_Ghana_ETdaily, aes(x = Site, y = Mean)) +
+  geom_boxplot(fill = c("#F8766D", "#C49A00", "#53B400", "#00C094", "#00B6EB","#A58AFF", "#FB61D7"), colour = "black", notch = TRUE) + 
+  scale_x_discrete(name = " ") + scale_y_continuous(name = expression(paste("ET (W m"^"-2"*")"))) + 
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))
+
+boxplot_Ghana_ETdaily
+
+boxplot_Ghana_ETinst = ggplot(all_Ghana_ETinst, aes(x = Site, y = Median)) +
+  geom_boxplot(fill = c("#F8766D", "#C49A00", "#53B400", "#00C094", "#00B6EB","#A58AFF", "#FB61D7"), colour = "black", notch = TRUE) + 
+  scale_x_discrete(name = " ") + scale_y_continuous(name = expression(paste("ET (W m"^"-2"*")"))) + 
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))
+
+boxplot_Ghana_ETinst
+
+# loess graph ET m_d - not sure why including year if its m_d
+loess_ETdaily_m_d_Ghana = ggplot(all_Ghana_ETdaily, aes(x = as.POSIXct(m_d,format = "%m-%d"), y = Mean, color = Site)) + 
+  scale_x_datetime(labels = date_format("%b")) + geom_point() + geom_smooth(se = FALSE) +
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11)) + 
+  xlab("Date") + 
+  ylab(expression(paste("ET (W m"^"-2"*")")))
+
+loess_ETdaily_m_d_Ghana
+
+loess_ETinst_ToD_Ghana = ggplot(all_Ghana_ETinst, aes(x = as.POSIXct(time,format = "%H:%M:%S"), y = Mean, color = Site)) + 
+  geom_point() +
+  geom_smooth(se = FALSE)+
+  theme_bw() +theme(axis.line = element_line(color = 'black'),plot.title = element_text(size = 14, family = "Tahoma", face = "bold"), 
+                    text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+                    axis.text.x=element_text(size = 11)) +xlab("Time of Day ")+ ylab(expression(paste("ET (W m"^"-2"*")"))) +
+  scale_x_datetime(date_labels = "%H:%M", limits = as.POSIXct(c("02:00", "18:00"),format = "%H:%M:%S"), breaks = "2 hour")
+
+loess_ETinst_ToD_Ghana
+
+################## WUE GRAPHS 
+# loess
+loess_WUE_m_d_Ghana = ggplot(all_data_Ghana_WUE, aes(x = as.POSIXct(m_d,format = "%m-%d"), y = Mean, color = Site)) + 
+  scale_x_datetime(labels = date_format("%b")) + geom_point() + geom_smooth(se = FALSE) + theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11)) + 
+  xlab("Date") + 
+  ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)")))
+
+loess_WUE_m_d_Ghana
+
+#all_data_Ghana_WUE[order(all_data_Ghana_WUE$m_d),]
+
+loess_WUE_ToD_Ghana = ggplot(all_data_Ghana_WUE, aes(x = as.POSIXct(time,format = "%H:%M:%S"), y = Mean, color = Site)) + 
+  geom_point() + geom_smooth(se = FALSE) +
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11)) + 
+  xlab("Date") + 
+  ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)")))
+
+loess_WUE_ToD_Ghana
+
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+gg_color_hue(7)
+
+# boxplot
+boxplot_Ghana_ETdaily = ggplot(all_data_Ghana_ET, aes(x = Site, y = Mean)) +
+  geom_boxplot(fill = c("#F8766D", "#C49A00", "#53B400", "#00C094", "#00B6EB","#A58AFF", "#FB61D7"), colour = "black", notch = TRUE) + 
+  scale_x_discrete(name = " ") + scale_y_continuous(name = expression(paste("ET (W m"^"-2"*")"))) + 
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))
+
+boxplot_Ghana_ETdaily
+
+boxplot_Ghana_WUEdaily = ggplot(all_data_Ghana_WUE, aes(x = Site, y = Mean)) +
+  geom_boxplot(fill = c("#F8766D", "#C49A00", "#53B400", "#00C094", "#00B6EB","#A58AFF", "#FB61D7"), colour = "black", notch = TRUE) + 
+  scale_x_discrete(name = " ") + scale_y_continuous(name = expression(paste("WUE (g C kg"^"-1 ",H[2],"O)"))) + 
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))
+
+boxplot_Ghana_WUEdaily
+
+# 2 panel image
+
+Ghana_WUE_Box_Loess <- ggarrange(boxplot_Ghana_WUEdaily, loess_WUE_m_d_Ghana,
+                                  labels = c("A", "B"),
+                                  ncol = 2, nrow = 1)

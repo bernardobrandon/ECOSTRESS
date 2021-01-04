@@ -1,0 +1,586 @@
+setwd("~/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data")
+
+# install
+install.packages("lubridate")
+installed.packages("tidyverse")
+install.packages("yarrr")
+install.packages("mvtnorm")
+install.packages("sp")
+install.packages("devtools")
+install.packages("rasterVis")
+install.packages("lattice")
+install.packages("scales")
+
+library("lubridate")
+library("tidyverse")
+library("yarrr")
+library("mvtnorm")
+library("ggplot2")
+library("ggpubr")
+library("ggmap")
+library("raster")
+library("sf")
+library("RColorBrewer")
+library("spData")
+library("spDataLarge")
+library("ggthemes")
+library("sp")
+library("devtools")
+library("rgdal")
+library("rasterVis")
+library("lattice")
+library("scales")
+
+#CRP01 = Cerrado Rupestre
+#NXV01 = Cerrado Tipico
+#NXV02 = Cerradao
+#VCR02 = Semi-Deciduous Forest
+
+# read in csv files
+WUE_CRP1 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP1.csv")
+WUE_CRP2 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP2.csv")
+WUE_CRP3 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP3.csv")
+WUE_CRP4 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP4.csv")
+WUE_CRP5 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP5.csv")
+WUE_CRP6 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP6.csv")
+WUE_CRP7 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP7.csv")
+WUE_CRP8 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP8.csv")
+WUE_CRP9 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP9.csv")
+WUE_CRP10 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-CRP10.csv")
+WUE_NXV01 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-NXV01.csv")
+WUE_NXV02 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-NXV02.csv")
+WUE_VCR02 = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_Data/ECO4WUE-001-Statistics-VCR02.csv")
+
+# assign Site column then boxplot, for mean
+WUE_CRP1$Site = "CRP"
+WUE_CRP2$Site = "CRP"
+WUE_CRP3$Site = "CRP"
+WUE_CRP4$Site = "CRP"
+WUE_CRP5$Site = "CRP"
+WUE_CRP6$Site = "CRP"
+WUE_CRP7$Site = "CRP"
+WUE_CRP8$Site = "CRP"
+WUE_CRP9$Site = "CRP"
+WUE_CRP10$Site = "CRP"
+WUE_VCR02$Site = "VCR"
+WUE_NXV01$Site = "NXV01"
+WUE_NXV02$Site = "NXV02"
+all_data = rbind(WUE_VCR02, WUE_NXV02, WUE_NXV01, WUE_CRP1, WUE_CRP2, WUE_CRP3, WUE_CRP4, WUE_CRP5, WUE_CRP6,
+                 WUE_CRP7, WUE_CRP8, WUE_CRP9, WUE_CRP10)
+
+# boxplot using ggplot
+boxplot_Brazil_WUE = ggplot(all_data, aes(x = Site, y = Mean)) +
+  geom_boxplot(fill = c("#F8766D", "#7CAE00", "#00BFC4", "#C77CFF"), colour = "black", notch = TRUE) + 
+  scale_x_discrete(name = " ") + scale_y_continuous(name = expression(paste("WUE (g C kg"^"-1 ",H[2],"O)"))) + 
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))
+
+boxplot_Brazil_WUE
+
+# create $date
+all_data$date = as_datetime(all_data$Date)
+all_data$date.adj = all_data$date - hours(4)
+all_data = separate(data=all_data,col=date.adj,into=c("date","time"), sep =" ")
+
+# extract "m-d" from "Y-m-d" 
+n_last = 5
+substr(all_data$date, nchar(all_data$date) - n_last + 1, nchar(all_data$date))
+all_data$m_d = substr(all_data$date, nchar(all_data$date) - n_last + 1, nchar(all_data$date))
+
+# Create "fake" same year for each month year combo
+Fake_Year = rep("2020-", length = 266)
+all_data$FakeY_m_d = paste0(Fake_Year, all_data$m_d)
+
+# Separate Site data
+NXV01sitedata = all_data[which(all_data$Site == "NXV01"),]
+NXV02sitedata = all_data[which(all_data$Site == "NXV02"),]
+VCR02sitedata = all_data[which(all_data$Site == "VCR02"),]
+CRPsitedata_unsorted = all_data[which(all_data$Site == "CRP"),]
+CRPsitedata = arrange(CRPsitedata_unsorted, date)
+
+# Loess
+###################################################### OLD CODE
+loess_WUE = ggplot() +geom_point(data=NXV02sitedata,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("#FF000099", trans.val = 0.4))+ 
+  geom_smooth(data=NXV02sitedata,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("#FF000099", trans.val = 0.4), se = FALSE)+
+  geom_point(data=NXV01sitedata,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("orange", trans.val = 0.3))+ 
+  geom_smooth(data=NXV01sitedata,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("orange", trans.val = 0.3), se = FALSE)+
+  geom_point(data=VCR02sitedata ,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("light green", trans.val = 0.3))+ 
+  geom_smooth(data=VCR02sitedata ,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("light green", trans.val = 0.3), se = FALSE)+
+  geom_point(data=CRPsitedata ,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("light blue", trans.val = 0.4))+ 
+  geom_smooth(data=CRPsitedata ,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color=yarrr::transparent("light blue", trans.val = 0.4), se = FALSE)+
+  theme_bw() +theme(axis.line = element_line(color = 'black'), plot.title = element_text(size = 14, 
+            family = "Tahoma", face = "bold"), text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+  axis.text.x=element_text(size = 11)) +xlab(" ")+ ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)")))
+###################################################### 
+
+loess_WUE = ggplot(all_data, aes(x = as.POSIXct(m_d,format = "%m-%d"), y = Mean, color = Site)) + 
+  geom_point() + geom_smooth(se = FALSE) +
+  theme_bw() + 
+  theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11)) + 
+  xlab("Date") + 
+  ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)")))
+
+ggplot_build(loess_WUE)
+
+tail(all_data[order(all_data$Date),])
+
+# Create 2 panel Graph of barplot and Loess
+Brazil_WUE_Box_Loess <- ggarrange(boxplot_Brazil_WUE, loess_WUE,
+                                  labels = c("A", "B"),
+                                  ncol = 2, nrow = 1)
+
+################################################ Brazil ET Data
+setwd("~/Documents/Chapman Research/ECOSTRESS Project/Dr_G_Example")
+data.et = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Dr_G_Example/ECO3ETJPL-001-ETInst-all.csv",header=TRUE)
+
+###Adjust the date: 
+data.et$date = as_datetime(data.et$Date)
+data.et$date.adj = data.et$date - hours(4)
+data.et.new = separate(data=data.et,col=date.adj,into=c("date","time"), sep =" ")
+#data.et.final = data.et.new[order(data.et.new$time),]
+
+# extract "03-27" from "2020-03-27" 
+n_last = 5
+substr(data.et.new$date, nchar(data.et.new$date) - n_last + 1, nchar(data.et.new$date))
+data.et.new$m_d = substr(data.et.new$date, nchar(data.et.new$date) - n_last + 1, nchar(data.et.new$date))
+
+# Assign each site
+NXV01 = data.et.new[which(data.et.new$Site == "NXV01"),]
+VCR = data.et.new[which(data.et.new$Site == "VCR"),]
+NXV02 = data.et.new[which(data.et.new$Site == "NXV02"),]
+CRP = data.et.new[which(data.et.new$Site == "CRP01"),]
+CRP$Site = "CRP"
+
+all_data_new = rbind(CRP,NXV01, NXV02, VCR)
+
+# NXV01 plot
+NXV01.plot = ggplot(NXV01,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean))+geom_point()+geom_smooth() +
+  #eliminates background, gridlines, and chart border
+  theme_bw() +
+  theme(axis.line = element_line(color = 'black'), plot.title = element_text(size = 14, 
+        family = "Tahoma", face = "bold"), text = element_text(size = 12, family = "Tahoma"), 
+        #axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))+
+  #draws x and y axis line
+  theme(axis.line = element_line(color = 'black')) +xlab("Time of day")+ylab(expression(paste("ET (W m"^"-2",")")))+ 
+  ggtitle("NXV01")
+
+# NXV02 plot
+NXV02.plot = ggplot(NXV02,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean))+geom_point()+geom_smooth() +
+  theme_bw() +
+  theme(axis.line = element_line(color = 'black'), plot.title = element_text(size = 14,                                                                              family = "Tahoma", face = "bold"), text = element_text(size = 12, family = "Tahoma"), 
+        #axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))+
+  theme(axis.line = element_line(color = 'black')) +xlab("Time of day")+ylab(expression(paste("ET (W m"^"-2",")")))+ 
+  ggtitle("NXV02")
+
+# VCR plot
+VCR.plot = ggplot(VCR,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean))+geom_point()+geom_smooth() +
+  theme_bw() +
+  theme(axis.line = element_line(color = 'black'), plot.title = element_text(size = 14,                                                                              family = "Tahoma", face = "bold"), text = element_text(size = 12, family = "Tahoma"), 
+        #axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))+
+  theme(axis.line = element_line(color = 'black')) +xlab("Time of day")+ylab(expression(paste("ET (W m"^"-2",")")))+ 
+  ggtitle("VCR")
+
+# CRP plot
+CRP.plot = ggplot(CRP,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean))+geom_point()+geom_smooth() +
+  theme_bw() +
+  theme(axis.line = element_line(color = 'black'), plot.title = element_text(size = 14,                                                                              family = "Tahoma", face = "bold"), text = element_text(size = 12, family = "Tahoma"), 
+        #axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11))+
+  theme(axis.line = element_line(color = 'black')) +xlab("Time of day")+
+  ylab(expression(paste("ET (W m"^"-2",")")))+ ggtitle("CRP")
+
+# ET Loess Time of day 
+############################################# OLD CODE
+loess_ET_ToD_Brazil = ggplot() + geom_point(data = NXV01, aes(as.POSIXct(time,format = "%H:%M:%S"),Mean), color = yarrr::transparent("#000000", trans.val = 0.3))+
+  geom_smooth(data=NXV01,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean), color = yarrr::transparent("#000000", trans.val = 0.3), se = FALSE) +
+  geom_point(data=NXV02,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean), color= yarrr::transparent("#FF0000", trans.val = 0.4))+ 
+  geom_smooth(data=NXV02,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean),color= yarrr::transparent("#FF0000", trans.val = 0.4), se = FALSE) +
+  geom_point(data=VCR,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean), color= yarrr::transparent("#008000", trans.val = 0.3))+ 
+  geom_smooth(data=VCR,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean), color= yarrr::transparent("#008000", trans.val = 0.3), se = FALSE) +
+  geom_point(data=CRP,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean), color= yarrr::transparent("#1E90FF", trans.val = 0.4)) + 
+  geom_smooth(data=CRP,aes(as.POSIXct(time,format = "%H:%M:%S"),Mean), color= yarrr::transparent("#1E90FF", trans.val = 0.4), se = FALSE) +
+  theme_bw() +theme(axis.line = element_line(color = 'black'),plot.title = element_text(size = 14, family = "Tahoma", face = "bold"), 
+                    text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+                    axis.text.x=element_text(size = 11)) +xlab("Time of Day ")+ ylab(expression(paste("ET (W m"^"-2"*")"))) 
+#############################################  
+
+loess_ET_ToD_Brazil = ggplot(all_data_new, aes(x = as.POSIXct(time,format = "%H:%M:%S"), y = Mean, color = Site)) + 
+  geom_point() +
+  geom_smooth(se = FALSE)+
+  theme_bw() +theme(axis.line = element_line(color = 'black'),plot.title = element_text(size = 14, family = "Tahoma", face = "bold"), 
+                    text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+                    axis.text.x=element_text(size = 11)) +xlab("Time of Day ")+ ylab(expression(paste("ET (W m"^"-2"*")"))) +
+ scale_x_datetime(date_labels = "%H:%M", limits = as.POSIXct(c("02:00", "18:00"),format = "%H:%M:%S"), breaks = "2 hour")
+
+loess_ET_ToD_Brazil
+
+#ET Canopy/Daily Data
+# read in csv
+setwd("~/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data")
+NXV01_Daily = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-NXV01-ETDaily.csv")
+NXV01_Daily = as.data.frame(NXV01_Daily)
+NXV01_Canopy = read_csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-NXV01-ETCanopy.csv")
+NXV01_Canopy = NXV01_Canopy[-c(19),]
+NXV01_Canopy = as.data.frame(NXV01_Canopy)
+NXV02_Daily = read_csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-NXV02-ETDaily.csv")
+NXV02_Daily = as.data.frame(NXV02_Daily)
+NXV02_Canopy = read_csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-NXV02-ETCanopy.csv")
+NXV02_Canopy = NXV02_Canopy[-c(17,24),]
+NXV02_Canopy = as.data.frame(NXV02_Canopy)
+VCR_Daily = read_csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-VCR02-ETDaily.csv")
+VCR_Daily = as.data.frame(VCR_Daily)
+VCR_Canopy = read_csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-VCR02-ETCanopy.csv")
+VCR_Canopy = VCR_Canopy[-c(11,18),]
+VCR_Canopy = as.data.frame(VCR_Canopy)
+
+# change column names to match for Daily dataframe
+names(NXV02_Daily)[names(NXV02_Daily) == "File Name"] = "File.Name"
+names(NXV02_Daily)[names(NXV02_Daily) == "Orbit Number"] = "Orbit.Number"
+names(NXV02_Daily)[names(NXV02_Daily) == "Build ID"] = "Build.ID"
+names(NXV02_Daily)[names(NXV02_Daily) == "Scene ID"] = "Scene.ID"
+names(NXV02_Daily)[names(NXV02_Daily) == "Standard Deviation"] = "Standard.Deviation"
+names(NXV02_Daily)[names(NXV02_Daily) == "Upper Quartile"] = "Upper.Quartile"
+names(NXV02_Daily)[names(NXV02_Daily) == "Upper 1.5 IQR"] = "Upper.1.5.IQR"
+names(NXV02_Daily)[names(NXV02_Daily) == "Lower 1.5 IQR"] = "Lower.1.5.IQR"
+names(NXV02_Daily)[names(NXV02_Daily) == "Lower Quartile"] = "Lower.Quartile"
+names(VCR_Daily)[names(VCR_Daily) == "File Name"] = "File.Name"
+names(VCR_Daily)[names(VCR_Daily) == "Orbit Number"] = "Orbit.Number"
+names(VCR_Daily)[names(VCR_Daily) == "Build ID"] = "Build.ID"
+names(VCR_Daily)[names(VCR_Daily) == "Scene ID"] = "Scene.ID"
+names(VCR_Daily)[names(VCR_Daily) == "Standard Deviation"] = "Standard.Deviation"
+names(VCR_Daily)[names(VCR_Daily) == "Upper Quartile"] = "Upper.Quartile"
+names(VCR_Daily)[names(VCR_Daily) == "Upper 1.5 IQR"] = "Upper.1.5.IQR"
+names(VCR_Daily)[names(VCR_Daily) == "Lower 1.5 IQR"] = "Lower.1.5.IQR"
+names(VCR_Daily)[names(VCR_Daily) == "Lower Quartile"] = "Lower.Quartile"
+
+# organize CRP data
+CRP1_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-1ETDaily_Canopy.csv")
+CRP2_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-2ETDaily_Canopy.csv")
+CRP3_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-3ETDaily_Canopy.csv")
+CRP4_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-4ETDaily_Canopy.csv")
+CRP5_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-5ETDaily_Canopy.csv")
+CRP6_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-6ETDaily_Canopy.csv")
+CRP7_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-7ETDaily_Canopy.csv")
+CRP8_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-8ETDaily_Canopy.csv")
+CRP9_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-9ETDaily_Canopy.csv")
+CRP10_Daily_Canopy = read.csv("/Users/brandonbernardo/Documents/Chapman Research/ECOSTRESS Project/Brazil/Daily_ET_Data/ECO3ETPTJPL-001-Statistics-CRP-10ETDaily_Canopy.csv")
+CRP1_Canopy = CRP1_Daily_Canopy[which(CRP1_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP1_Canopy = CRP1_Canopy[-c(18,25),]
+CRP1_Daily = CRP1_Daily_Canopy[which(CRP1_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP2_Canopy = CRP2_Daily_Canopy[which(CRP2_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP2_Canopy = CRP2_Canopy[-c(18,24),]
+CRP2_Daily = CRP2_Daily_Canopy[which(CRP2_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP3_Canopy = CRP3_Daily_Canopy[which(CRP3_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP3_Canopy = CRP3_Canopy[-c(18,25),]
+CRP3_Daily = CRP3_Daily_Canopy[which(CRP3_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP4_Canopy = CRP4_Daily_Canopy[which(CRP4_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP4_Canopy = CRP4_Canopy[-c(16,22),]
+CRP4_Daily = CRP4_Daily_Canopy[which(CRP4_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP5_Canopy = CRP5_Daily_Canopy[which(CRP5_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP5_Canopy = CRP5_Canopy[-c(17,24),]
+CRP5_Daily = CRP5_Daily_Canopy[which(CRP5_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP6_Canopy = CRP6_Daily_Canopy[which(CRP6_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP6_Canopy = CRP6_Canopy[-c(18,25),]
+CRP6_Daily = CRP6_Daily_Canopy[which(CRP6_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP7_Canopy = CRP7_Daily_Canopy[which(CRP7_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP7_Canopy = CRP7_Canopy[-c(16,22),]
+CRP7_Daily = CRP7_Daily_Canopy[which(CRP7_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP8_Canopy = CRP8_Daily_Canopy[which(CRP8_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP8_Canopy = CRP8_Canopy[-c(18,25),]
+CRP8_Daily = CRP8_Daily_Canopy[which(CRP8_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP9_Canopy = CRP9_Daily_Canopy[which(CRP9_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP9_Canopy = CRP9_Canopy[-c(16,22),]
+CRP9_Daily = CRP9_Daily_Canopy[which(CRP9_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+CRP10_Canopy = CRP10_Daily_Canopy[which(CRP10_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETcanopy"),]
+CRP10_Canopy = CRP10_Canopy[-c(16,23),]
+CRP10_Daily = CRP10_Daily_Canopy[which(CRP10_Daily_Canopy$Dataset == "EVAPOTRANSPIRATION_PT_JPL_ETdaily"),]
+
+# correct column names for canopy data frame
+names(NXV01_Canopy)[names(NXV01_Canopy) == "File Name"] = "File.Name"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Orbit Number"] = "Orbit.Number"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Build ID"] = "Build.ID"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Scene ID"] = "Scene.ID"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Standard Deviation"] = "Standard.Deviation"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Upper Quartile"] = "Upper.Quartile"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Upper 1.5 IQR"] = "Upper.1.5.IQR"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Lower 1.5 IQR"] = "Lower.1.5.IQR"
+names(NXV01_Canopy)[names(NXV01_Canopy) == "Lower Quartile"] = "Lower.Quartile"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "File Name"] = "File.Name"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Orbit Number"] = "Orbit.Number"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Build ID"] = "Build.ID"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Scene ID"] = "Scene.ID"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Standard Deviation"] = "Standard.Deviation"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Upper Quartile"] = "Upper.Quartile"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Upper 1.5 IQR"] = "Upper.1.5.IQR"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Lower 1.5 IQR"] = "Lower.1.5.IQR"
+names(NXV02_Canopy)[names(NXV02_Canopy) == "Lower Quartile"] = "Lower.Quartile"
+names(VCR_Canopy)[names(VCR_Canopy) == "File Name"] = "File.Name"
+names(VCR_Canopy)[names(VCR_Canopy) == "Orbit Number"] = "Orbit.Number"
+names(VCR_Canopy)[names(VCR_Canopy) == "Build ID"] = "Build.ID"
+names(VCR_Canopy)[names(VCR_Canopy) == "Scene ID"] = "Scene.ID"
+names(VCR_Canopy)[names(VCR_Canopy) == "Standard Deviation"] = "Standard.Deviation"
+names(VCR_Canopy)[names(VCR_Canopy) == "Upper Quartile"] = "Upper.Quartile"
+names(VCR_Canopy)[names(VCR_Canopy) == "Upper 1.5 IQR"] = "Upper.1.5.IQR"
+names(VCR_Canopy)[names(VCR_Canopy) == "Lower 1.5 IQR"] = "Lower.1.5.IQR"
+names(VCR_Canopy)[names(VCR_Canopy) == "Lower Quartile"] = "Lower.Quartile"
+
+# add site names
+CRP1_Daily$Site = "CRP"
+CRP2_Daily$Site = "CRP"
+CRP3_Daily$Site = "CRP"
+CRP4_Daily$Site = "CRP"
+CRP5_Daily$Site = "CRP"
+CRP6_Daily$Site = "CRP"
+CRP7_Daily$Site = "CRP"
+CRP8_Daily$Site = "CRP"
+CRP9_Daily$Site = "CRP"
+CRP10_Daily$Site = "CRP"
+VCR_Daily$Site = "VCR"
+NXV01_Daily$Site = "NXV01"
+NXV02_Daily$Site = "NXV02"
+
+# Rbind
+all_ET_Daily_Data = rbind(CRP1_Daily,CRP2_Daily,CRP3_Daily,CRP4_Daily,CRP5_Daily,CRP6_Daily,CRP7_Daily,
+      CRP8_Daily,CRP9_Daily,CRP10_Daily,NXV01_Daily,NXV02_Daily,VCR_Daily)
+all_ET_Canopy_Data = rbind(CRP1_Canopy,CRP2_Canopy,CRP3_Canopy,CRP4_Canopy,CRP5_Canopy,CRP6_Canopy,CRP7_Canopy,
+                           CRP8_Canopy,CRP9_Canopy,CRP10_Canopy,NXV01_Canopy,NXV02_Canopy,VCR_Canopy)
+
+#Remove E from T, multiply by canopy /100, added T_Daily to Daily data frame
+all_ET_Daily_Data$T_Daily = (all_ET_Daily_Data$Mean) * ((all_ET_Canopy_Data$Mean)/100)
+
+# create $date
+all_ET_Daily_Data$date = as_datetime(all_ET_Daily_Data$Date)
+all_ET_Daily_Data$date.adj = all_ET_Daily_Data$date - hours(4)
+all_ET_Daily_Data = separate(data=all_ET_Daily_Data,col=date.adj,into=c("date","time"), sep =" ")
+
+# extract "03-27" from "2020-03-27" 
+n_last = 5
+substr(all_ET_Daily_Data$date, nchar(all_ET_Daily_Data$date) - n_last + 1, nchar(all_ET_Daily_Data$date))
+all_ET_Daily_Data$m_d = substr(all_ET_Daily_Data$date, nchar(all_ET_Daily_Data$date) - n_last + 1, nchar(all_ET_Daily_Data$date))
+
+#ET Loess Month_Day
+#want daily ET not inst only for time of day
+  ggplot() + geom_point(data = NXV01_Daily, aes(as.POSIXct(m_d,format = "%m-%d"),Mean), color = yarrr::transparent("#000000", trans.val = 0.3)) +
+  geom_smooth(data=NXV01_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),Mean), color = yarrr::transparent("#000000", trans.val = 0.3), se = FALSE) +
+  geom_point(data=NXV02_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),Mean), color= yarrr::transparent("#FF0000", trans.val = 0.4))+ 
+  geom_smooth(data=NXV02_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),Mean),color= yarrr::transparent("#FF0000", trans.val = 0.4), se = FALSE) +
+  geom_point(data=VCR_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),Mean), color= yarrr::transparent("#008000", trans.val = 0.3))+ 
+  geom_smooth(data=VCR_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),Mean), color= yarrr::transparent("#008000", trans.val = 0.3), se = FALSE) +
+  geom_point(data=All_CRP_Daily_Data,aes(as.POSIXct(m_d,format = "%m-%d"),Mean), color= yarrr::transparent("#1E90FF", trans.val = 0.4)) + 
+  geom_smooth(data=All_CRP_Daily_Data,aes(as.POSIXct(m_d,format = "%m-%d"),Mean), color= yarrr::transparent("#1E90FF", trans.val = 0.4), se = FALSE) +
+  theme_bw() +theme(axis.line = element_line(color = 'black'),plot.title = element_text(size = 14, family = "Tahoma", face = "bold"), 
+                    text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+                    axis.text.x=element_text(size = 11)) +xlab("Day of Year")+ ylab(expression(paste("ET Daily (W m"^"-2"*")"))) +
+  ylim(0,500)
+
+loess_Daily_ET_md_Brazil = ggplot(all_ET_Daily_Data, aes(x = as.POSIXct(m_d,format = "%m-%d"), y = Mean, color = Site)) + 
+  geom_point() + geom_smooth(se = FALSE) +theme_bw() + 
+  theme(axis.line = element_line(color = 'black'),plot.title = element_text(size = 14, family = "Tahoma", face = "bold"), 
+                    text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+                    axis.text.x=element_text(size = 11)) +
+  xlab("Day of Year")+ ylab(expression(paste("ET Daily (W m"^"-2"*")"))) + ylim(0,500)
+
+loess_Daily_ET_md_Brazil
+
+#Loess Daily T Month_Day
+
+ ggplot() + geom_point(data = NXV01_Daily, aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily), color = yarrr::transparent("#000000", trans.val = 0.3)) +
+  geom_smooth(data=NXV01_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily), color = yarrr::transparent("#000000", trans.val = 0.3), se = FALSE) +
+  geom_point(data=NXV02_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily), color= yarrr::transparent("#FF0000", trans.val = 0.4))+ 
+  geom_smooth(data=NXV02_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily),color= yarrr::transparent("#FF0000", trans.val = 0.4), se = FALSE) +
+  geom_point(data=VCR_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily), color= yarrr::transparent("#008000", trans.val = 0.3))+ 
+  geom_smooth(data=VCR_Daily,aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily), color= yarrr::transparent("#008000", trans.val = 0.3), se = FALSE) +
+  geom_point(data=All_CRP_Daily_Data,aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily), color= yarrr::transparent("#1E90FF", trans.val = 0.4)) + 
+  geom_smooth(data=All_CRP_Daily_Data,aes(as.POSIXct(m_d,format = "%m-%d"),T_Daily), color= yarrr::transparent("#1E90FF", trans.val = 0.4), se = FALSE) +
+  theme_bw() +theme(axis.line = element_line(color = 'black'),plot.title = element_text(size = 14, family = "Tahoma", face = "bold"), 
+                    text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+                    axis.text.x=element_text(size = 11)) +xlab("Day of Year")+ ylab(expression(paste("T Daily (W m"^"-2"*")"))) +
+  ylim(0,500)
+
+loess_Daily_T_md_Brazil = ggplot(all_ET_Daily_Data, aes(x = as.POSIXct(m_d,format = "%m-%d"), y = T_Daily, color = Site)) + 
+  geom_point() + geom_smooth(se = FALSE) + theme_bw() +
+  theme(axis.line = element_line(color = 'black'),plot.title = element_text(size = 14, family = "Tahoma", face = "bold"), 
+        text = element_text(size = 12, family = "Tahoma"), axis.title = element_text(face="bold"),
+        axis.text.x=element_text(size = 11), legend.position = "none") + xlab("Day of Year") + ylab(expression(paste("T Daily (W m"^"-2"*")"))) +
+  ylim(0,500)
+
+########
+
+ggplot(all_ET_Daily_Data, aes(x = as.POSIXct(time,format = "%H:%M:%S"), y = Mean, color = Site)) + 
+  geom_point() +
+  geom_smooth(se = FALSE)
+
+########
+
+loess_Daily_T_md_Brazil
+
+Brazil_Daily_T_ToD_md_Loess <- ggarrange(loess_Daily_T_ToD_Brazil, loess_Daily_T_md_Brazil,
+                                  labels = c("A", "B"),
+                                  ncol = 2, nrow = 1)
+
+Brazil_Daily_ET_T_md_Loess = ggarrange(loess_Daily_ET_md_Brazil,loess_Daily_T_md_Brazil,
+          labels = c("A", "B"),
+          ncol = 2, nrow = 1)
+
+Brazil_Daily_ET_T_md_Loess
+
+
+################################################ Brazil Raster
+setwd("~/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_geotiffs")
+Brazil_rastlist <- list.files(path = setwd("~/Documents/Chapman Research/ECOSTRESS Project/Brazil/WUE_geotiffs"), 
+                              pattern='.tif$', all.files=TRUE, full.names=FALSE)
+
+# import all raster files in folder using lapply
+allrasters_Brazil <- lapply(Brazil_rastlist, raster)
+
+# resample 
+dims_whole = extent(-52.44278, -52.09427, -14.88227, -14.57102)
+crop_whole = crop(allrasters_Brazil[[7]], dims_whole)
+re_allrasters_Brazil = lapply(allrasters_Brazil, resample, crop_whole, method = "bilinear")
+
+# Create Stack , change colors
+ET_B_STACK <- stack(re_allrasters_Brazil) 
+plot(mean(ET_B_STACK, na.rm = TRUE), col= brewer.pal(9,"RdYlBu")) # blue high
+
+# overlay, import file of LANDSAT image
+setwd("~/Documents/Chapman Research/ECOSTRESS Project/Brazil/Landsat_Image")
+sat_rastlist_Brazil = list.files(path = "~/Documents/Chapman Research/ECOSTRESS Project/Brazil/Landsat_Image", 
+                                 pattern='.tif$', all.files=TRUE, full.names=FALSE)
+
+# import all raster files in folder
+sat_raster_Brazil <- lapply(sat_rastlist_Brazil, raster)
+
+# resample
+dims = extent(-52.44278, -52.09427, -14.88227, -14.57102)
+b = crop(allrasters_Brazil[[7]], dims)
+re_sat_raster_Brazil = lapply(sat_raster_Brazil, resample, b, method = "bilinear")
+
+##Create a spatial polygon for NXV01: 
+NXV01poly = Polygon(cbind(c(-52.351697,-52.352422,-52.35252,-52.351591),c(-14.707541,-14.707573,-14.708458,-14.708391)))
+NXV01.ps=Polygons(list(NXV01poly),1)
+NXV01.sps=SpatialPolygons(list(NXV01.ps))
+proj4string(NXV01.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for NXV02:
+NXV02poly = Polygon(cbind(c(-52.351048,-52.351968,-52.351806,-52.350877),c(-14.700123,-14.700227,-14.701113,-14.700992)))
+ps=Polygons(list(NXV02poly),1)
+NXV02.sps=SpatialPolygons(list(ps))
+proj4string(NXV01.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP01:
+CRP01poly = Polygon(cbind(c(-52.352632,-52.352561,-52.352375,-52.352465),c(-14.713122,-14.713556,-14.713521,-14.713077)))
+ps=Polygons(list(CRP01poly),1)
+CRP01.sps=SpatialPolygons(list(ps))
+proj4string(CRP01.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP02:
+CRP02poly = Polygon(cbind(c(-52.352028,-52.351956,-52.351761,-52.351842),c(-14.712944,-14.713388,-14.713344,-14.712927)))
+ps=Polygons(list(CRP02poly),1)
+CRP02.sps=SpatialPolygons(list(ps))
+proj4string(CRP02.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP03:
+CRP03poly = Polygon(cbind(c(-52.351422,-52.351193,-52.351034,-52.351255),c(-14.712713,-14.713094,-14.712968,-14.712614)))
+ps=Polygons(list(CRP03poly),1)
+CRP03.sps=SpatialPolygons(list(ps))
+proj4string(CRP03.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP04:
+CRP04poly = Polygon(cbind(c(-52.349324,-52.349419,-52.349243,-52.349148),c(-14.712788,-14.713204,-14.713232,-14.712835)))
+ps=Polygons(list(CRP04poly),1)
+CRP04.sps=SpatialPolygons(list(ps))
+proj4string(CRP04.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP05:
+CRP05poly = Polygon(cbind(c(-52.346529,-52.34655,-52.346336,-52.346334),c(-14.712796,-14.713257,-14.713258,-14.712788)))
+ps=Polygons(list(CRP05poly),1)
+CRP05.sps=SpatialPolygons(list(ps))
+proj4string(CRP05.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP06:
+CRP06poly = Polygon(cbind(c(-52.349456,-52.349105,-52.34903,-52.349437),c(-14.711667,-14.711877,-14.711733,-14.711513)))
+ps=Polygons(list(CRP06poly),1)
+CRP06.sps=SpatialPolygons(list(ps))
+proj4string(CRP06.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP07:
+CRP07poly = Polygon(cbind(c(-52.347871,-52.348031,-52.347837,-52.347685),c(-14.710582,-14.711006,-14.711052,-14.710619)))
+ps=Polygons(list(CRP07poly),1)
+CRP07.sps=SpatialPolygons(list(ps))
+proj4string(CRP07.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP08:
+CRP08poly = Polygon(cbind(c(-52.347343,-52.347392,-52.347206,-52.347157),c(-14.710757,-14.711218,-14.711228,-14.710785)))
+ps=Polygons(list(CRP08poly),1)
+CRP08.sps=SpatialPolygons(list(ps))
+proj4string(CRP08.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP09:
+CRP09poly = Polygon(cbind(c(-52.346639,-52.346809,-52.346633,-52.346445),c(-14.711132,-14.711547,-14.711611,-14.711196)))
+ps=Polygons(list(CRP09poly),1)
+CRP09.sps=SpatialPolygons(list(ps))
+proj4string(CRP09.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a spatial polygon for CRP10:
+CRP10poly = Polygon(cbind(c(-52.34573,-52.345761,-52.345566,-52.345517),c(-14.711363,-14.711824,-14.711834,-14.711382)))
+ps=Polygons(list(CRP10poly),1)
+CRP10.sps=SpatialPolygons(list(ps))
+proj4string(CRP10.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0") 
+
+##Create a single polygon that binds CRPsubplots together: 
+CRPbind.sps = bind(c(CRP01.sps,CRP02.sps,CRP03.sps,CRP04.sps,CRP05.sps,CRP06.sps,CRP07.sps,CRP08.sps,CRP09.sps,CRP10.sps))
+
+##Create a spatial polygon for VCR02:
+VCR02poly = Polygon(cbind(c(-52.1688934,-52.16887938,-52.16802393,-52.16803786),c(-14.8319636,-14.8328134,-14.83271831,-14.83185043)))
+ps=Polygons(list(VCR02poly),1)
+VCR02.sps=SpatialPolygons(list(ps))
+proj4string(VCR02.sps) = CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
+
+# Overlay images
+plot(re_sat_raster_Brazil[[1]], col = grey(1:100/100), legend = FALSE, main = "WUE Brazil", alpha = 0.9, las = 1)
+plot(mean(ET_B_STACK, na.rm = TRUE), col= brewer.pal(9,"RdYlBu"), add = TRUE, alpha = 0.65)
+plot(NXV01.sps, add = TRUE)
+plot(NXV02.sps, add = TRUE)
+plot(CRPbind.sps, add = TRUE)
+plot(VCR02.sps, add = TRUE)
+
+################################################
+
+# Zoom in on 2 sites (not done)
+dims_A = extent(-52.365, -52.335, -14.72, -14.69)
+dims_B = extent(-52.18, -52.16, -14.84, -14.825)
+crop_A = crop(allrasters_Brazil[[7]], dims_A)
+crop_B = crop(allrasters_Brazil[[7]], dims_B)
+re_allrasters_Brazil_A = lapply(allrasters_Brazil, resample, crop_A, method = "bilinear")
+re_allrasters_Brazil_B = lapply(allrasters_Brazil[c(1,22,23,24,25)], resample, crop_B, method = "bilinear")
+
+# Create Stack , change colors
+STACK_A <- stack(re_allrasters_Brazil_A) 
+STACK_B <- stack(re_allrasters_Brazil_B) 
+
+par(mfrow = c(1,2))
+plot(mean(STACK_A, na.rm = TRUE), col= brewer.pal(9,"RdYlBu"), axes = FALSE, box = FALSE) # blue high
+plot(NXV01.sps, add = TRUE)
+plot(NXV02.sps, add = TRUE)
+plot(CRPbind.sps, add = TRUE)
+plot(mean(STACK_B, na.rm = TRUE), col= brewer.pal(9,"RdYlBu"), axes = FALSE, box = FALSE) # blue high
+plot(VCR02.sps, add = TRUE)
+
+plot(mean(STACK_B, na.rm = TRUE))
+
+
+
+
+#use ggplot to remake plots so that ggarange can be used for 2 panel image
+#levelplot?
+
+########################

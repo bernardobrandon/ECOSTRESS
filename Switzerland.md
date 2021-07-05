@@ -8,26 +8,40 @@ switz = readOGR("ch_1km.shp")
 switz_RP = spTransform(switz, crs(allrasters_Swiz[[1]]))
 
 ####################################################################### Read in tif, filter, extend, stack
-# read in swath LST data
+# read in masking object
+forestmask = readOGR("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Swiz_Forest_Cover_Shapefile/Vector_Landuse_CH/VEC200_LandCover.shp")
+forestmask_RP = spTransform(forestmask,crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
 
 # JULY 2018 TIF
 setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Switz_WUE_July_2018_TIF")
 Swiz_rastlist_JULY_18 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Switz_WUE_July_2018_TIF"), 
                                     pattern='.tif$', all.files=TRUE, full.names=FALSE)
+
 JULY_18_List = list()
 for (i in Swiz_rastlist_JULY_18[1:4]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  raster.file = aggregate(raster.file, fact = 250)
   JULY_18_List[[i]] = raster.file
 }
 
+# figure out how to remove specific pixels from raster
+# removes values >= 4 in stack, can only do one stack at a time, 
+# need to write loop so it can do it for every stack
+values(JULY_18_List[[4]])[values(JULY_18_List[[4]])>=4]
+
+
+
 # set model for all extend
-large_dims = extent(5, 11, 45.5, 48)
+large_dims = extent(forestmask_RP)
 extend_whole = extend(JULY_18_List[[3]], large_dims)
 
 # extend
 extended_allrasters_Swiz_JULY_18 = lapply(JULY_18_List, resample, extend_whole, method = "bilinear")
 stack_Swiz_JULY_18 = stack(extended_allrasters_Swiz_JULY_18)
+mean_Swiz_July_18 = mean(stack_Swiz_JULY_18, na.rm = TRUE)
+plot(mask(mean_Swiz_July_18, forestmask_RP, inverse = TRUE))
+
 
 # save
 writeRaster(stack_Swiz_JULY_18, "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Raster_Stacks/July_18_Stack",
@@ -208,20 +222,33 @@ writeRaster(stack_Swiz_Summer_20_sd, "/Users/brandonbernardo/Dropbox/NASA-ECOSTR
             bylayer=TRUE,format="GTiff")
 writeRaster(Swiz_Summer_20_mean, "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Raster_Stacks/Summer_20_Mean",
             bylayer=TRUE,format="GTiff")
-# end of making raster stacks
 
-# read in all stacks in case of failure
+All_Summers_Mean = mean(Swiz_Summer_18_mean, Swiz_Summer_19_mean, Swiz_Summer_20_mean, na.rm = TRUE)
+plot(All_Summers_Mean)
+plot(mask(All_Summers_Mean, forestmask_RP, inverse = TRUE))
+
+### end of making raster stacks
+
+
+
+### read in all stacks in case of failure
+# AUG 18 
 AUG_18_list_factored =  list.files(path = setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Raster_Stacks/Aug_18_Stack"), 
                              pattern='.tif$', all.files=TRUE, full.names=FALSE)
+AUG_18_List_test = list()
+for (i in AUG_18_list_factored) {
+  raster.file = raster(i)
+  AUG_18_List_test[[i]] = raster.file
+}
 
-
-
+# add rest of files if needed
 
 # masking
 forestmask = readOGR("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Swiz_Forest_Cover_Shapefile/Vector_Landuse_CH/VEC200_LandCover.shp")
 forestmask_RP = spTransform(forestmask,crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
-stack_Swiz=mask(stack_Swiz1,forestmask_RP,inverse=TRUE)
+
+Swiz_JULY_18_WUE_masked =mask(stack_Swiz_JULY_18,forestmask_RP,inverse=TRUE)
 
 
 
@@ -1261,3 +1288,5 @@ library(lme4)
 model = lmer(meanGPP.T ~ ci.ca + (1 + ci.ca|Species),
              data = carbon13validationdata_final)
 summary(model)
+
+

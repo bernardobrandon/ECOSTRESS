@@ -2,10 +2,10 @@
 
 ######
 # Add country outline: 
-setwd("~/Documents/Chapman Research/ECOSTRESS Project/Switzerland/Swiz_Shapefile/Switzerland_shapefile")
-switz = readOGR("ch_1km.shp")
+setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Swiz_Shapefile")
+switz = readOGR("G1L12.shp", layer = "G1L12")
 # reproject spatial outline to match raster data
-switz_RP = spTransform(switz, crs(allrasters_Swiz[[1]]))
+switz_outline_RP = spTransform(switz, crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 ####################################################################### Read in tif, filter, extend, stack
 # read in masking object
@@ -21,16 +21,10 @@ Swiz_rastlist_JULY_18 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox
 JULY_18_List = list()
 for (i in Swiz_rastlist_JULY_18[1:4]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 250)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   JULY_18_List[[i]] = raster.file
 }
-
-# figure out how to remove specific pixels from raster
-# removes values >= 4 in stack, can only do one stack at a time, 
-# need to write loop so it can do it for every stack
-values(JULY_18_List[[4]])[values(JULY_18_List[[4]])>=4]
-
-
 
 # set model for all extend
 large_dims = extent(forestmask_RP)
@@ -40,8 +34,7 @@ extend_whole = extend(JULY_18_List[[3]], large_dims)
 extended_allrasters_Swiz_JULY_18 = lapply(JULY_18_List, resample, extend_whole, method = "bilinear")
 stack_Swiz_JULY_18 = stack(extended_allrasters_Swiz_JULY_18)
 mean_Swiz_July_18 = mean(stack_Swiz_JULY_18, na.rm = TRUE)
-plot(mask(mean_Swiz_July_18, forestmask_RP, inverse = TRUE))
-
+#plot(mask(mean_Swiz_July_18, forestmask_RP, inverse = TRUE))
 
 # save
 writeRaster(stack_Swiz_JULY_18, "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Raster_Stacks/July_18_Stack",
@@ -55,13 +48,16 @@ Swiz_rastlist_AUG_18 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox/
 AUG_18_List = list()
 for (i in Swiz_rastlist_AUG_18[1:50]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   AUG_18_List[[i]] = raster.file
 }
 
 # extend
 extended_allrasters_Swiz_AUG_18 = lapply(AUG_18_List, resample, extend_whole, method = "bilinear")
 stack_Swiz_AUG_18 = stack(extended_allrasters_Swiz_AUG_18)
+mean_Swiz_AUG_18 = mean(stack_Swiz_AUG_18, na.rm = TRUE)
+#plot(mask(mean_Swiz_AUG_18, forestmask_RP, inverse = TRUE))
 
 # save
 writeRaster(stack_Swiz_AUG_18, "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Raster_Stacks/Aug_18_Stack",
@@ -72,9 +68,10 @@ setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland
 Swiz_rastlist_JUNE_19 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Switz_WUE_June_2019_TIF"), 
                                     pattern='.tif$', all.files=TRUE, full.names=FALSE)
 JUNE_19_List = list()
-for (i in Swiz_rastlist_JUNE_19[1:50]) {
+for (i in Swiz_rastlist_JUNE_19[1:57]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   JUNE_19_List[[i]] = raster.file
 }
 
@@ -93,7 +90,8 @@ Swiz_rastlist_JULY_19 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox
 JULY_19_List = list()
 for (i in Swiz_rastlist_JULY_19[1:18]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   JULY_19_List[[i]] = raster.file
 }
 
@@ -112,7 +110,8 @@ Swiz_rastlist_AUG_19 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox/
 AUG_19_List = list()
 for (i in Swiz_rastlist_AUG_19[1:52]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   AUG_19_List[[i]] = raster.file
 }
 
@@ -133,7 +132,8 @@ Swiz_rastlist_JUNE_20 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox
 JUNE_20_List = list()
 for (i in Swiz_rastlist_JUNE_20[1:48]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   JUNE_20_List[[i]] = raster.file
 }
 
@@ -152,7 +152,8 @@ Swiz_rastlist_JULY_20 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox
 JULY_20_List = list()
 for (i in Swiz_rastlist_JULY_20[1:21]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   JULY_20_List[[i]] = raster.file
 }
 
@@ -169,9 +170,10 @@ setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland
 Swiz_rastlist_AUG_20 <- list.files(path = setwd("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Switz_WUE_Aug_2020_TIF"), 
                                    pattern='.tif$', all.files=TRUE, full.names=TRUE)
 AUG_20_List = list()
-for (i in Swiz_rastlist_AUG_20[1:60]) {
+for (i in Swiz_rastlist_AUG_20[1:64]) {
   raster.file = raster(i)
-  raster.file = aggregate(raster.file, fact = 500)
+  values(raster.file)[values(raster.file)>4] = NA
+  raster.file = aggregate(raster.file, fact = 10)
   AUG_20_List[[i]] = raster.file
 }
 
@@ -223,11 +225,114 @@ writeRaster(stack_Swiz_Summer_20_sd, "/Users/brandonbernardo/Dropbox/NASA-ECOSTR
 writeRaster(Swiz_Summer_20_mean, "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Raster_Stacks/Summer_20_Mean",
             bylayer=TRUE,format="GTiff")
 
-All_Summers_Mean = mean(Swiz_Summer_18_mean, Swiz_Summer_19_mean, Swiz_Summer_20_mean, na.rm = TRUE)
-plot(All_Summers_Mean)
-plot(mask(All_Summers_Mean, forestmask_RP, inverse = TRUE))
+# stack all rasters and by month/year 
+All_Rasters = stack(extended_allrasters_Swiz_JULY_18, extended_allrasters_Swiz_AUG_18, 
+      extended_allrasters_Swiz_JUNE_19, extended_allrasters_Swiz_JULY_19, extended_allrasters_Swiz_AUG_19, 
+      extended_allrasters_Swiz_JUNE_20, extended_allrasters_Swiz_JULY_20, extended_allrasters_Swiz_AUG_20)
+
+All_Rasters_18 = stack(extended_allrasters_Swiz_JULY_18, extended_allrasters_Swiz_AUG_18)
+All_Rasters_19 = stack(extended_allrasters_Swiz_JUNE_19, extended_allrasters_Swiz_JULY_19, extended_allrasters_Swiz_AUG_19)
+All_Rasters_20 = stack(extended_allrasters_Swiz_JUNE_20, extended_allrasters_Swiz_JULY_20, extended_allrasters_Swiz_AUG_20)
+
+# only stacks work
+All_Stacks = stack(stack_Swiz_JULY_18, stack_Swiz_AUG_18,
+                   stack_Swiz_JUNE_19, stack_Swiz_JULY_19,stack_Swiz_AUG_19,
+                   stack_Swiz_JUNE_20, stack_Swiz_JULY_20, stack_Swiz_AUG_20)
+
+All_Stacks_18 = stack(stack_Swiz_JULY_18, stack_Swiz_AUG_18)
+Mean_All_Stacks_18 = mean(All_Stacks_18, na.rm = TRUE)
+All_Stacks_19 = stack(stack_Swiz_JUNE_19, stack_Swiz_JULY_19, stack_Swiz_AUG_19)
+Mean_All_Stacks_19 = mean(All_Stacks_19, na.rm = TRUE)
+All_Stacks_20 = stack(stack_Swiz_JUNE_20, stack_Swiz_JULY_20, stack_Swiz_AUG_20)
+Mean_All_Stacks_20 = mean(All_Stacks_20, na.rm = TRUE)
+
+All_Stacks_June = stack(stack_Swiz_JUNE_19, stack_Swiz_JUNE_20)
+Mean_All_Stacks_June = mean(All_Stacks_June, na.rm = TRUE)
+All_Stacks_July = stack(stack_Swiz_JULY_18,stack_Swiz_JULY_19, stack_Swiz_JULY_20)
+Mean_All_Stacks_July = mean(All_Stacks_July, na.rm = TRUE)
+All_Stacks_Aug = stack(stack_Swiz_AUG_18, stack_Swiz_AUG_19, stack_Swiz_AUG_20)
+Mean_All_Stacks_Aug = mean(All_Stacks_Aug, na.rm = TRUE)
+
+
+# find mean/sd of all rasters
+
+SD_All_Stacks = calc(All_Stacks, fun = sd, na.rm = TRUE)
+Mean_All_Stacks = mean(All_Stacks, na.rm = TRUE)
+
+#All_Summers_Mean = mean(Swiz_Summer_18_mean, Swiz_Summer_19_mean, Swiz_Summer_20_mean, na.rm = TRUE)
+#All_Summers_sd = calc(All_Summers_SDs_Stack, fun = sd, na.rm = TRUE)
+
+# get stats form values in rasters
+# all summers
+
+# these are country means, need forest only
+mean(values(All_Stacks), na.rm = TRUE) #1.191261
+median(values(All_Stacks), na.rm = TRUE) #1.199519
+sd(values(All_Stacks), na.rm = TRUE) #0.6311981
+
+# 2018
+mean(values(stack_Swiz_Summer_18), na.rm = TRUE) #1.176278
+median(values(stack_Swiz_Summer_18), na.rm = TRUE) #1.181401
+sd(values(stack_Swiz_Summer_18), na.rm = TRUE) #0.5707687
+
+# 2019
+mean(values(stack_Swiz_Summer_19), na.rm = TRUE) #1.207044
+median(values(stack_Swiz_Summer_19), na.rm = TRUE) #1.205882
+sd(values(stack_Swiz_Summer_19), na.rm = TRUE) #0.6505638
+
+# 2020
+mean(values(stack_Swiz_Summer_20), na.rm = TRUE) #1.182345
+median(values(stack_Swiz_Summer_20), na.rm = TRUE) #1.203615
+sd(values(stack_Swiz_Summer_20), na.rm = TRUE) #0.6425532
+
+#June
+mean(values(Mean_All_Stacks_June), na.rm = TRUE) #1.090109
+sd(values(Mean_All_Stacks_June), na.rm = TRUE) #0.5265986
+
+#July
+mean(values(Mean_All_Stacks_July), na.rm = TRUE) #1.091754
+sd(values(Mean_All_Stacks_July), na.rm = TRUE) #0.428752
+
+#AUG
+mean(values(Mean_All_Stacks_Aug), na.rm = TRUE) #1.281163
+sd(values(Mean_All_Stacks_Aug), na.rm = TRUE) #0.5268643
+
+# Convert to data frame for gggplot
+stack_Swiz.mean = calc(stack_Swiz,fun=median,na.rm=TRUE)
+
+stack_Swiz.sd = calc(stack_Swiz,fun=sd,na.rm=TRUE)
+
+install.packages("scico")
+library("scico")
+
+
+# dr g code
+# mask before code
+Mean_All_Stacks
+Mean_All_Stacks_Masked = mask(Mean_All_Stacks, forestmask_RP, inverse = TRUE)
+mean(values(Mean_All_Stacks_Masked), na.rm = TRUE) #1.276906
+
+stack_Swiz_mean_pts = rasterToPoints(Mean_All_Stacks,spatial=TRUE)
+stack_Swiz_df = data.frame(stack_Swiz_mean_pts)
+
+Swiz_mean = ggplot()+
+  geom_raster(data = stack_Swiz_df,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1)+
+  labs(fill="WUE")+
+  ggtitle("Median summer WUE")+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_blank())
 
 ### end of making raster stacks
+
+# original figure
+# 18 19 20 plots - sup - masked 
+# june july aug plots - sup - masked
+
 
 
 
@@ -1275,7 +1380,7 @@ Plot_WUE_Nutrients_9_Panel = ggarrange(GPP.T_Ozone, GPP.T_2019_Ozone_2019, GPP.T
 GPP.T_C13_cica = carbon13validationdata_final %>%
   ggplot(aes(ci.ca,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("2019 WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("ci/ca")))+ theme_bw() +
+  labs(y=expression(paste("2019 WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("C"["i"],"/C"["a"])))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1288,5 +1393,33 @@ library(lme4)
 model = lmer(meanGPP.T ~ ci.ca + (1 + ci.ca|Species),
              data = carbon13validationdata_final)
 summary(model)
+
+
+# plot swiz wue plots
+plot(mask(mean_Swiz_July_18, forestmask_RP, inverse = TRUE), 
+     main = "Mean Summer WUE July 18", breaks = c(1.0, 2.0, 3.0, 4.0),
+     axes =  FALSE)
+
+# WUE SWIZ WIDE PLOTS
+all_summers_mean_plot = plot(mask(Mean_All_Stacks, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+all_summers_sd_plot = plot(mask(SD_All_Stacks, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+all_summers_median_plot = plot(mask(Median_All_Stacks, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+summer_18_plot = plot(mask(Mean_All_Stacks_18, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+summer_19_plot = plot(mask(Mean_All_Stacks_19, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+summer_20_plot = plot(mask(Mean_All_Stacks_20, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+all_june_plot = plot(mask(Mean_All_Stacks_June, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+all_july_plot = plot(mask(Mean_All_Stacks_July, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+all_Aug_plot = plot(mask(Mean_All_Stacks_Aug, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
+
+
+
+# add northing and scale bar
+# X what stats can you get from a raster stack
+# X across swis forests the mean summer WUE was xxx in 2018, xxx in 2019, etc...
+# X get mean/sd of each summer
+# X make median plots as well 
+# X ci/ca italicized in the plot 
+
+
 
 

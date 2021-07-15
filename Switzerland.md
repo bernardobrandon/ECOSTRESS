@@ -1,4 +1,8 @@
 # RASTER CODE
+install.packages("scico")
+library("scico")
+install.packages("ggsn")
+library('ggsn')
 
 ######
 # Add country outline: 
@@ -226,14 +230,6 @@ writeRaster(Swiz_Summer_20_mean, "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/
             bylayer=TRUE,format="GTiff")
 
 # stack all rasters and by month/year 
-All_Rasters = stack(extended_allrasters_Swiz_JULY_18, extended_allrasters_Swiz_AUG_18, 
-      extended_allrasters_Swiz_JUNE_19, extended_allrasters_Swiz_JULY_19, extended_allrasters_Swiz_AUG_19, 
-      extended_allrasters_Swiz_JUNE_20, extended_allrasters_Swiz_JULY_20, extended_allrasters_Swiz_AUG_20)
-
-All_Rasters_18 = stack(extended_allrasters_Swiz_JULY_18, extended_allrasters_Swiz_AUG_18)
-All_Rasters_19 = stack(extended_allrasters_Swiz_JUNE_19, extended_allrasters_Swiz_JULY_19, extended_allrasters_Swiz_AUG_19)
-All_Rasters_20 = stack(extended_allrasters_Swiz_JUNE_20, extended_allrasters_Swiz_JULY_20, extended_allrasters_Swiz_AUG_20)
-
 # only stacks work
 All_Stacks = stack(stack_Swiz_JULY_18, stack_Swiz_AUG_18,
                    stack_Swiz_JUNE_19, stack_Swiz_JULY_19,stack_Swiz_AUG_19,
@@ -259,73 +255,223 @@ Mean_All_Stacks_Aug = mean(All_Stacks_Aug, na.rm = TRUE)
 SD_All_Stacks = calc(All_Stacks, fun = sd, na.rm = TRUE)
 Mean_All_Stacks = mean(All_Stacks, na.rm = TRUE)
 
-#All_Summers_Mean = mean(Swiz_Summer_18_mean, Swiz_Summer_19_mean, Swiz_Summer_20_mean, na.rm = TRUE)
-#All_Summers_sd = calc(All_Summers_SDs_Stack, fun = sd, na.rm = TRUE)
-
-# get stats form values in rasters
-# all summers
-
-# these are country means, need forest only
-mean(values(All_Stacks), na.rm = TRUE) #1.191261
-median(values(All_Stacks), na.rm = TRUE) #1.199519
-sd(values(All_Stacks), na.rm = TRUE) #0.6311981
+# mask then take mean/sd so its forest only 
+All_Stacks_Masked = mask(All_Stacks, forestmask_RP, inverse = TRUE)
+mean(values(All_Stacks_Masked), na.rm = TRUE) #1.266063
+sd(values(All_Stacks_Masked), na.rm = TRUE) #0.5813665
 
 # 2018
-mean(values(stack_Swiz_Summer_18), na.rm = TRUE) #1.176278
-median(values(stack_Swiz_Summer_18), na.rm = TRUE) #1.181401
-sd(values(stack_Swiz_Summer_18), na.rm = TRUE) #0.5707687
+stack_Swiz_Summer_18_Masked = mask(stack_Swiz_Summer_18, forestmask_RP, inverse = TRUE)
+mean(values(stack_Swiz_Summer_18_Masked), na.rm = TRUE) #1.246557
+sd(values(stack_Swiz_Summer_18_Masked), na.rm = TRUE) #0.4965932
 
 # 2019
-mean(values(stack_Swiz_Summer_19), na.rm = TRUE) #1.207044
-median(values(stack_Swiz_Summer_19), na.rm = TRUE) #1.205882
-sd(values(stack_Swiz_Summer_19), na.rm = TRUE) #0.6505638
+stack_Swiz_Summer_19_Masked = mask(stack_Swiz_Summer_19, forestmask_RP, inverse = TRUE)
+mean(values(stack_Swiz_Summer_19_Masked), na.rm = TRUE) #1.283212
+sd(values(stack_Swiz_Summer_19_Masked), na.rm = TRUE) #0.6054168
 
 # 2020
-mean(values(stack_Swiz_Summer_20), na.rm = TRUE) #1.182345
-median(values(stack_Swiz_Summer_20), na.rm = TRUE) #1.203615
-sd(values(stack_Swiz_Summer_20), na.rm = TRUE) #0.6425532
+stack_Swiz_Summer_20_Masked = mask(stack_Swiz_Summer_20, forestmask_RP, inverse = TRUE)
+mean(values(stack_Swiz_Summer_20_Masked), na.rm = TRUE) #1.258108
+sd(values(stack_Swiz_Summer_20_Masked), na.rm = TRUE) #0.5994255
 
 #June
-mean(values(Mean_All_Stacks_June), na.rm = TRUE) #1.090109
-sd(values(Mean_All_Stacks_June), na.rm = TRUE) #0.5265986
+All_Stacks_June_Masked = mask(All_Stacks_June, forestmask_RP, inverse = TRUE)
+mean(values(All_Stacks_June_Masked), na.rm = TRUE) #1.216963
+sd(values(All_Stacks_June_Masked), na.rm = TRUE) #0.5591247
 
 #July
-mean(values(Mean_All_Stacks_July), na.rm = TRUE) #1.091754
-sd(values(Mean_All_Stacks_July), na.rm = TRUE) #0.428752
+All_Stacks_July_Masked = mask(All_Stacks_July, forestmask_RP, inverse = TRUE)
+mean(values(All_Stacks_July_Masked), na.rm = TRUE) #1.125943
+sd(values(All_Stacks_July_Masked), na.rm = TRUE) #0.537743
 
 #AUG
-mean(values(Mean_All_Stacks_Aug), na.rm = TRUE) #1.281163
-sd(values(Mean_All_Stacks_Aug), na.rm = TRUE) #0.5268643
+All_Stacks_Aug_Masked = mask(All_Stacks_Aug, forestmask_RP, inverse = TRUE)
+mean(values(All_Stacks_Aug_Masked), na.rm = TRUE) #1.343962
+sd(values(All_Stacks_Aug_Masked), na.rm = TRUE) #0.5977083
 
-# Convert to data frame for gggplot
+# Convert to data frame for ggplot
 stack_Swiz.mean = calc(stack_Swiz,fun=median,na.rm=TRUE)
-
 stack_Swiz.sd = calc(stack_Swiz,fun=sd,na.rm=TRUE)
 
-install.packages("scico")
-library("scico")
-
-
-# dr g code
-# mask before code
-Mean_All_Stacks
+# mask before plot
+# Mean All Summers
 Mean_All_Stacks_Masked = mask(Mean_All_Stacks, forestmask_RP, inverse = TRUE)
-mean(values(Mean_All_Stacks_Masked), na.rm = TRUE) #1.276906
-
-stack_Swiz_mean_pts = rasterToPoints(Mean_All_Stacks,spatial=TRUE)
+stack_Swiz_mean_pts = rasterToPoints(Mean_All_Stacks_Masked,spatial=TRUE)
 stack_Swiz_df = data.frame(stack_Swiz_mean_pts)
 
-Swiz_mean = ggplot()+
+install.packages('ggspatial')
+library('ggspatial')
+
+All_Summers_Mean_WUE_Plot = ggplot()+
   geom_raster(data = stack_Swiz_df,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+ 
+  labs(fill="WUE")+
+  ggtitle(expression(paste("Mean Summer WUE (g C ",kg^-1," ",H[2],O,")")))+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank(), legend.position="bottom") +
+  geom_point(data = data.corrected, aes(x = long, y = lat), size = 1, alpha = 1) + 
+  scalebar(location = "topleft", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+            dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84", 
+           st.dist = 0.05, st.size = 3) +
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10, location = "bottomleft") + coord_fixed() 
+
+
+# SD all Summers
+SD_All_Stacks_Masked = mask(SD_All_Stacks, forestmask_RP, inverse = TRUE)
+stack_Swiz_SD_pts = rasterToPoints(SD_All_Stacks_Masked,spatial=TRUE)
+stack_Swiz_df_SD = data.frame(stack_Swiz_SD_pts)
+
+All_Summers_SD_WUE_Plot = ggplot()+
+  geom_raster(data = stack_Swiz_df_SD,aes(x = x, y = y, fill = layer))+
   scale_fill_scico(palette = 'batlow',direction=-1)+
   labs(fill="WUE")+
-  ggtitle("Median summer WUE")+
+  ggtitle(expression(paste("Standard Deviation of Summer WUE (g C ",kg^-1," ",H[2],O,")")))+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
-  theme(panel.grid = element_blank(),
-        axis.title = element_blank(),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.background = element_blank())
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank(), legend.position="bottom") +
+  geom_point(data = data.corrected, aes(x = long, y = lat), size = 1, alpha = 1) + 
+  scalebar(location = "topleft", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84", 
+           st.dist = 0.05, st.size = 3) + 
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10, location = "bottomleft") + coord_fixed() 
+
+# 2 panel original image remake
+WUE_SD_All_Summers_2Panel = ggarrange(All_Summers_Mean_WUE_Plot, All_Summers_SD_WUE_Plot, 
+          nrow = 2, ncol = 1)
+
+# save image
+ggsave(WUE_SD_All_Summers_2Panel, plot = WUE_SD_All_Summers_2Panel, device = "pdf",
+       path = "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Final_Plots",
+       dpi = 300, scale = 2)
+
+# All 18 WUE
+Mean_All_Stacks_18_Masked = mask(Mean_All_Stacks_18, forestmask_RP, inverse = TRUE)
+stack_Swiz_18_pts = rasterToPoints(Mean_All_Stacks_18_Masked,spatial=TRUE)
+stack_Swiz_df_18 = data.frame(stack_Swiz_18_pts)
+
+All_18_WUE_Plot = ggplot()+
+  geom_raster(data = stack_Swiz_df_18,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
+  labs(fill="WUE")+
+  ggtitle("Mean 2018 WUE")+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank()) +
+  scalebar(location = "bottomright", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10) 
+
+# All 19 WUE
+Mean_All_Stacks_19_Masked = mask(Mean_All_Stacks_19, forestmask_RP, inverse = TRUE)
+stack_Swiz_19_pts = rasterToPoints(Mean_All_Stacks_19_Masked,spatial=TRUE)
+stack_Swiz_df_19 = data.frame(stack_Swiz_19_pts)
+
+All_19_WUE_Plot = ggplot()+
+  geom_raster(data = stack_Swiz_df_19,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
+  labs(fill="WUE")+
+  ggtitle("Mean 2019 WUE")+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank()) +
+  scalebar(location = "bottomright", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10) 
+
+# All 20 WUE
+Mean_All_Stacks_20_Masked = mask(Mean_All_Stacks_20, forestmask_RP, inverse = TRUE)
+stack_Swiz_20_pts = rasterToPoints(Mean_All_Stacks_20_Masked,spatial=TRUE)
+stack_Swiz_df_20 = data.frame(stack_Swiz_20_pts)
+
+All_20_WUE_Plot = ggplot()+
+  geom_raster(data = stack_Swiz_df_20,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
+  labs(fill="WUE")+
+  ggtitle("Mean 2020 WUE")+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank()) +
+  scalebar(location = "bottomright", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10) 
+
+# 3 panel 18, 19, 20
+WUE_18_19_20_3Panel = ggarrange(All_18_WUE_Plot, All_19_WUE_Plot, All_20_WUE_Plot,
+                                      nrow = 3, ncol = 1)
+
+# All June WUE
+Mean_All_Stacks_June_Masked = mask(Mean_All_Stacks_June, forestmask_RP, inverse = TRUE)
+stack_Swiz_June_pts = rasterToPoints(Mean_All_Stacks_June_Masked,spatial=TRUE)
+stack_Swiz_df_June = data.frame(stack_Swiz_June_pts) 
+
+All_June_WUE_Plot = ggplot()+
+  geom_raster(data = stack_Swiz_df_June,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
+  labs(fill="WUE")+
+  ggtitle("Mean June WUE")+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank()) +
+  scalebar(location = "bottomright", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10) 
+
+# All July WUE
+Mean_All_Stacks_July_Masked = mask(Mean_All_Stacks_July, forestmask_RP, inverse = TRUE)
+stack_Swiz_July_pts = rasterToPoints(Mean_All_Stacks_July_Masked,spatial=TRUE)
+stack_Swiz_df_July = data.frame(stack_Swiz_July_pts)
+
+All_July_WUE_Plot = ggplot()+
+  geom_raster(data = stack_Swiz_df_July,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
+  labs(fill="WUE")+
+  ggtitle("Mean July WUE")+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank()) +
+  scalebar(location = "bottomright", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10) 
+
+# All Aug WUE
+Mean_All_Stacks_Aug_Masked = mask(Mean_All_Stacks_Aug, forestmask_RP, inverse = TRUE)
+stack_Swiz_Aug_pts = rasterToPoints(Mean_All_Stacks_Aug_Masked,spatial=TRUE)
+stack_Swiz_df_Aug = data.frame(stack_Swiz_Aug_pts)
+
+All_Aug_WUE_Plot = ggplot()+
+  geom_raster(data = stack_Swiz_df_Aug,aes(x = x, y = y, fill = layer))+
+  scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
+  labs(fill="WUE")+
+  ggtitle("Mean August WUE")+
+  geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
+  theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
+        axis.ticks = element_blank(), panel.background = element_blank()) +
+  scalebar(location = "bottomright", 
+           x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+  north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
+        symbol = 10) 
+
+# 3 panel June, July, Aug
+WUE_June_July_Aug_3Panel = ggarrange(All_June_WUE_Plot, All_July_WUE_Plot, All_Aug_WUE_Plot,
+                                nrow = 3, ncol = 1)
+
 
 ### end of making raster stacks
 
@@ -348,30 +494,11 @@ for (i in AUG_18_list_factored) {
 
 # add rest of files if needed
 
-# masking
-forestmask = readOGR("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Bernardo_All_Swiz_Data/Switzerland copy/Swiz_Forest_Cover_Shapefile/Vector_Landuse_CH/VEC200_LandCover.shp")
-forestmask_RP = spTransform(forestmask,crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-
-
-Swiz_JULY_18_WUE_masked =mask(stack_Swiz_JULY_18,forestmask_RP,inverse=TRUE)
 
 
 
 
-# below may be deleted besides plot
-# Summer 2018 ############################################################################################
-# Plot Summer 18 WUE + SD
-plot(mean_stack_Swiz_Summer_18, col= brewer.pal(9,"RdYlBu"))
-plot(stack_Swiz_Summer_18_sd, na.rm = TRUE, col= brewer.pal(9,"RdYlBu"))
 
-# Summer 2019 #######################
-# Plot Summer 19 WUE
-plot(mean_stack_Swiz_Summer_19, col= brewer.pal(9,"RdYlBu"))
-
-# Summer 2020 #######################
-# Plot All Summer 20 WUE + SD? - how to plot SD?
-plot(mean(stack_Swiz_Summer_20, na.rm = TRUE), col= brewer.pal(9,"RdYlBu"))
-plot(mean_stack_Swiz_Summer_20, col= brewer.pal(9,"RdYlBu"))
 
 ######################################################################################################
 
@@ -644,6 +771,7 @@ str(data)
 data.corrected =  merge(test, test.2) %>%
   merge(data)
 str(data.corrected)
+str(data.WUE.ET.final)
 
 # what sites got kicked?
 kicked.sites = test[which(!test$site.number %in% data.corrected$site.number),]
@@ -936,19 +1064,26 @@ box(bty="l")
 # some LOESS
 # colored by species
 str(data.WUE.ET.final)
+
+# rename for correct legend
+data.WUE.ET.final = data.WUE.ET.final %>% 
+  rename(
+    'Species Composition' = Species,
+  )
+
 Swiz_loess_Adjusted_WUE_All = ggplot(data.WUE.ET.final, aes(x = as.POSIXct(m_d,format = "%m-%d"), 
-                                                            y = WUE_GPP_by_T, color = Species)) +
-  geom_point() + geom_smooth(se = FALSE) + theme_bw() + ggtitle("All Summers") +
+                                                            y = WUE_GPP_by_T, color = `Species Composition`)) +
+  geom_point(alpha = 0.5) + geom_smooth(se = FALSE) + theme_bw() + ggtitle(" ") +
   theme(plot.title = element_text(size = 20, family = "Tahoma"),
         text = element_text(size = 20, family = "Tahoma"),
         axis.title = element_text(size = 20),
         axis.text = element_text(size = 20))  +
-  xlab("Date") + ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)")))
+  xlab("Date") + ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)"))) 
 
 # All Summers 
 Swiz_loess_WUE_All = ggplot(data.WUE.ET.final, aes(x = as.POSIXct(m_d,format = "%m-%d"), 
                                                    y = WUEavg, color = ID)) + 
-  geom_point() + geom_smooth(se = FALSE) + theme_bw() + ggtitle("All Summers") +
+  geom_point(alpha = 0.5) + geom_smooth(se = FALSE) + theme_bw() + ggtitle(" ") +
   theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
         text = element_text(size = 12, family = "Tahoma"),
         axis.title = element_text(face="bold"),
@@ -1014,10 +1149,11 @@ GPP.T_Elevation = data.corrected %>%
   ggplot(aes(elevation,MeanGPP.T_Corrected)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
   labs(y=expression(paste("WUE (g C ",kg^-1," ",H[2],O,")")), x="Elevation (m asl)")+ theme_bw() +
-  theme(plot.title = element_text(size = 10, family = "Tahoma"),
-        text = element_text(size = 10, family = "Tahoma"),
-        axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+  theme(plot.title = element_text(size = 11, family = "Tahoma"),
+        text = element_text(size = 11, family = "Tahoma"),
+        axis.title = element_text(size = 11),
+        axis.text = element_text(size = 11), legend.position="none") + 
+  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
 
 # slope
 GPP.T_Slope = data.corrected %>%
@@ -1027,7 +1163,8 @@ GPP.T_Slope = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
 
 # aspect
 GPP.T_Aspect = data.corrected %>%
@@ -1037,27 +1174,30 @@ GPP.T_Aspect = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
 
 # temp
 GPP.T_Temp = data.corrected %>%
   ggplot(aes(mean.annual.T,MeanGPP.T_Corrected)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
   labs(y=expression(paste("WUE (g C ",kg^-1," ",H[2],O,")")), x="Mean annual temperature (\u00B0C)")+ theme_bw() +
-  theme(plot.title = element_text(size = 10, family = "Tahoma"),
-        text = element_text(size = 10, family = "Tahoma"),
-        axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+  theme(plot.title = element_text(size = 11, family = "Tahoma"),
+        text = element_text(size = 11, family = "Tahoma"),
+        axis.title = element_text(size = 11),
+        axis.text = element_text(size = 11), legend.position="none") + 
+  stat_cor(method = "pearson", label.y.npc = 0.95)
 
 # precip
 GPP.T_Precipitation = data.corrected %>%
   ggplot(aes(mean.annual.P,MeanGPP.T_Corrected)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
   labs(y=expression(paste("WUE (g C ",kg^-1," ",H[2],O,")")), x="Mean annual precipitation (mm)")+ theme_bw() +
-  theme(plot.title = element_text(size = 10, family = "Tahoma"),
-        text = element_text(size = 10, family = "Tahoma"),
-        axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+  theme(plot.title = element_text(size = 11, family = "Tahoma"),
+        text = element_text(size = 11, family = "Tahoma"),
+        axis.title = element_text(size = 11),
+        axis.text = element_text(size = 11), legend.position="none") + 
+  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
 
 # Rel. Humidity
 GPP.T_Rel_Humidity = data.corrected %>%
@@ -1067,7 +1207,8 @@ GPP.T_Rel_Humidity = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.y.npc = 0.95)
 
 # oxidized n
 GPP.T_Oxidized_N = data.corrected %>%
@@ -1077,7 +1218,8 @@ GPP.T_Oxidized_N = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
 
 # reduced n
 GPP.T_Reduced_N = data.corrected %>%
@@ -1087,22 +1229,28 @@ GPP.T_Reduced_N = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
-str(data.corrected)
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+
 # n dep
 GPP.T_N_Deposition = data.corrected %>%
   ggplot(aes(total.n.deposition,MeanGPP.T_Corrected)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
   labs(y=expression(paste("WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Total nitrogen deposition (kg N ",ha^-1, yr^-1,")")))+ theme_bw() +
-  theme(plot.title = element_text(size = 10, family = "Tahoma"),
-        text = element_text(size = 10, family = "Tahoma"),
-        axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+  theme(plot.title = element_text(size = 11, family = "Tahoma"),
+        text = element_text(size = 11, family = "Tahoma"),
+        axis.title = element_text(size = 11),
+        axis.text = element_text(size = 11), legend.position="none") + 
+  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
 
 
-Plot_Swiz_Both_WUE = ggarrange(GPP.T_Elevation, GPP.T_Slope, GPP.T_Aspect, GPP.T_Temp, GPP.T_Precipitation,
-                               GPP.T_Rel_Humidity, GPP.T_Oxidized_N, GPP.T_Reduced_N, GPP.T_N_Deposition,
-                               ncol = 3, nrow = 3)
+
+EF_WUE_4Panel = ggarrange(GPP.T_Elevation, GPP.T_Temp, GPP.T_Precipitation,
+                          GPP.T_N_Deposition,
+                               ncol = 1, nrow = 4)
+
+Nitrogen_WUE_3Panel = ggarrange(GPP.T_Oxidized_N, GPP.T_Reduced_N, GPP.T_N_Deposition,
+                                ncol = 1, nrow = 3)
 ###### 9 panel SD
 # elevation
 GPP.T_Elevation_SD = data.corrected %>%
@@ -1201,17 +1349,22 @@ Plot_Swiz_Both_WUE_SD = ggarrange(GPP.T_Elevation_SD, GPP.T_Slope_SD, GPP.T_Aspe
                                   ncol = 3, nrow = 3)
 
 ###### wue boxplot by species
-par(mfrow=c(1,1),mar=c(5,4.5,1.5,1),cex=1.02)
 
-wue_boxplot = boxplot(WUE_GPP_by_T~Species,data=data.WUE.ET.final,las=1,
-                      xlab="Dominant tree species",
-                      cex.lab=1.75, cex.axis=1.75, notch = T) 
+wue_boxplot = ggplot(data.WUE.ET.final, aes(x = `Species Composition`, y = WUE_GPP_by_T, fill = `Species Composition`)) + 
+  geom_boxplot(notch=TRUE) +
+  labs(y=expression(paste("WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Species Composition")))+ theme_bw() +
+  theme(plot.title = element_text(size = 17, family = "Tahoma"),
+        text = element_text(size = 17, family = "Tahoma"),
+        axis.title = element_text(size = 17),
+        axis.text = element_text(size = 17), legend.position="none")
 
-title(ylab=expression(paste("WUE (GPP/T) g C ",kg^-1," ",H[2],O)), line=2.1, cex.lab=1.75)
+ggsave(wue_boxplot, plot = wue_boxplot, device = "pdf",
+       path = "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Final_Plots"
+      )
 
-# plot
-# set parameters
-#par(mfrow=c(3,3),mar=c(5,4.5,1.5,1),cex=1.02)
+ggplot_build(wue_boxplot)$data
+
 
 # Leaf Nitrogen
 GPP.T_Leaf_Nitrogen = all.data %>%
@@ -1222,7 +1375,8 @@ GPP.T_Leaf_Nitrogen = all.data %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.text=element_text(size=15),
+        legend.title=element_text(size=15), legend.position="bottom")
 
 # Calcium
 GPP.T_Calcium = all.data %>%
@@ -1419,6 +1573,21 @@ all_Aug_plot = plot(mask(Mean_All_Stacks_Aug, forestmask_RP, inverse = TRUE), co
 # X get mean/sd of each summer
 # X make median plots as well 
 # X ci/ca italicized in the plot 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

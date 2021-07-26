@@ -251,7 +251,6 @@ Mean_All_Stacks_Aug = mean(All_Stacks_Aug, na.rm = TRUE)
 
 
 # find mean/sd of all rasters
-
 SD_All_Stacks = calc(All_Stacks, fun = sd, na.rm = TRUE)
 Mean_All_Stacks = mean(All_Stacks, na.rm = TRUE)
 
@@ -290,10 +289,6 @@ All_Stacks_Aug_Masked = mask(All_Stacks_Aug, forestmask_RP, inverse = TRUE)
 mean(values(All_Stacks_Aug_Masked), na.rm = TRUE) #1.343962
 sd(values(All_Stacks_Aug_Masked), na.rm = TRUE) #0.5977083
 
-# Convert to data frame for ggplot
-stack_Swiz.mean = calc(stack_Swiz,fun=median,na.rm=TRUE)
-stack_Swiz.sd = calc(stack_Swiz,fun=sd,na.rm=TRUE)
-
 # mask before plot
 # Mean All Summers
 Mean_All_Stacks_Masked = mask(Mean_All_Stacks, forestmask_RP, inverse = TRUE)
@@ -311,14 +306,16 @@ All_Summers_Mean_WUE_Plot = ggplot()+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
         axis.ticks = element_blank(), panel.background = element_blank(), legend.position="bottom") +
-  geom_point(data = data.corrected, aes(x = long, y = lat), size = 1, alpha = 1) + 
-  scalebar(location = "topleft", 
+  geom_point(data = data.corrected, aes(x = long, y = lat), shape = 24, colour = "blue", 
+             size = 1, alpha = 1,) + 
+  scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
             dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84", 
            st.dist = 0.05, st.size = 3) +
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10, location = "bottomleft") + coord_fixed() 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5) 
 
+median(stack_Swiz_df$layer)
 
 # SD all Summers
 SD_All_Stacks_Masked = mask(SD_All_Stacks, forestmask_RP, inverse = TRUE)
@@ -333,17 +330,18 @@ All_Summers_SD_WUE_Plot = ggplot()+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
         axis.ticks = element_blank(), panel.background = element_blank(), legend.position="bottom") +
-  geom_point(data = data.corrected, aes(x = long, y = lat), size = 1, alpha = 1) + 
-  scalebar(location = "topleft", 
+  geom_point(data = data.corrected, aes(x = long, y = lat), shape = 21, colour = "black",
+             size = 1, alpha = 1) + 
+  scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
            dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84", 
            st.dist = 0.05, st.size = 3) + 
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10, location = "bottomleft") + coord_fixed() 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5) 
 
 # 2 panel original image remake
 WUE_SD_All_Summers_2Panel = ggarrange(All_Summers_Mean_WUE_Plot, All_Summers_SD_WUE_Plot, 
-          nrow = 2, ncol = 1)
+                                      labels = c("A)", "B)"), nrow = 1, ncol = 2)
 
 # save image
 ggsave(WUE_SD_All_Summers_2Panel, plot = WUE_SD_All_Summers_2Panel, device = "pdf",
@@ -358,16 +356,17 @@ stack_Swiz_df_18 = data.frame(stack_Swiz_18_pts)
 All_18_WUE_Plot = ggplot()+
   geom_raster(data = stack_Swiz_df_18,aes(x = x, y = y, fill = layer))+
   scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
-  labs(fill="WUE")+
-  ggtitle("Mean 2018 WUE")+
+  ggtitle(expression(paste("Mean 2018 WUE (g C ",kg^-1," ",H[2],O,")")))+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
-        axis.ticks = element_blank(), panel.background = element_blank()) +
+        axis.ticks = element_blank(), panel.background = element_blank(),
+        legend.position = "none") +
   scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84",
+           st.size = 2, border.size = 0.1) +
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10) 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5) 
 
 # All 19 WUE
 Mean_All_Stacks_19_Masked = mask(Mean_All_Stacks_19, forestmask_RP, inverse = TRUE)
@@ -377,16 +376,17 @@ stack_Swiz_df_19 = data.frame(stack_Swiz_19_pts)
 All_19_WUE_Plot = ggplot()+
   geom_raster(data = stack_Swiz_df_19,aes(x = x, y = y, fill = layer))+
   scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
-  labs(fill="WUE")+
-  ggtitle("Mean 2019 WUE")+
+  ggtitle(expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")))+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
-        axis.ticks = element_blank(), panel.background = element_blank()) +
+        axis.ticks = element_blank(), panel.background = element_blank(),
+        legend.position = "none") +
   scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84",
+           st.size = 2, border.size = 0.1) +
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10) 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5) 
 
 # All 20 WUE
 Mean_All_Stacks_20_Masked = mask(Mean_All_Stacks_20, forestmask_RP, inverse = TRUE)
@@ -396,20 +396,23 @@ stack_Swiz_df_20 = data.frame(stack_Swiz_20_pts)
 All_20_WUE_Plot = ggplot()+
   geom_raster(data = stack_Swiz_df_20,aes(x = x, y = y, fill = layer))+
   scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
-  labs(fill="WUE")+
-  ggtitle("Mean 2020 WUE")+
+  ggtitle(expression(paste("Mean 2020 WUE (g C ",kg^-1," ",H[2],O,")")))+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
-        axis.ticks = element_blank(), panel.background = element_blank()) +
+        axis.ticks = element_blank(), panel.background = element_blank(),
+        legend.position = "none") +
   scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84",
+           st.size = 2, border.size = 0.1) +
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10) 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5) 
+
+#f = north2(All_20_WUE_Plot, x=.9, y=.08,  symbol = 10)
 
 # 3 panel 18, 19, 20
 WUE_18_19_20_3Panel = ggarrange(All_18_WUE_Plot, All_19_WUE_Plot, All_20_WUE_Plot,
-                                      nrow = 3, ncol = 1)
+                                nrow = 1, ncol = 3)
 
 # All June WUE
 Mean_All_Stacks_June_Masked = mask(Mean_All_Stacks_June, forestmask_RP, inverse = TRUE)
@@ -419,16 +422,17 @@ stack_Swiz_df_June = data.frame(stack_Swiz_June_pts)
 All_June_WUE_Plot = ggplot()+
   geom_raster(data = stack_Swiz_df_June,aes(x = x, y = y, fill = layer))+
   scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
-  labs(fill="WUE")+
-  ggtitle("Mean June WUE")+
+  ggtitle(expression(paste("Mean June WUE (g C ",kg^-1," ",H[2],O,")")))+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
-        axis.ticks = element_blank(), panel.background = element_blank()) +
+        axis.ticks = element_blank(), panel.background = element_blank(),
+        legend.position = "none") +
   scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84",
+           st.size = 2, border.size = 0.1) +
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10) 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5)
 
 # All July WUE
 Mean_All_Stacks_July_Masked = mask(Mean_All_Stacks_July, forestmask_RP, inverse = TRUE)
@@ -438,16 +442,17 @@ stack_Swiz_df_July = data.frame(stack_Swiz_July_pts)
 All_July_WUE_Plot = ggplot()+
   geom_raster(data = stack_Swiz_df_July,aes(x = x, y = y, fill = layer))+
   scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
-  labs(fill="WUE")+
-  ggtitle("Mean July WUE")+
+  ggtitle(expression(paste("Mean July WUE (g C ",kg^-1," ",H[2],O,")")))+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
-        axis.ticks = element_blank(), panel.background = element_blank()) +
+        axis.ticks = element_blank(), panel.background = element_blank(),
+        legend.position = "none") +
   scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84",
+           st.size = 2, border.size = 0.1) +
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10) 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5)
 
 # All Aug WUE
 Mean_All_Stacks_Aug_Masked = mask(Mean_All_Stacks_Aug, forestmask_RP, inverse = TRUE)
@@ -457,20 +462,21 @@ stack_Swiz_df_Aug = data.frame(stack_Swiz_Aug_pts)
 All_Aug_WUE_Plot = ggplot()+
   geom_raster(data = stack_Swiz_df_Aug,aes(x = x, y = y, fill = layer))+
   scale_fill_scico(palette = 'batlow',direction=-1, limits=c(0,4))+
-  labs(fill="WUE")+
-  ggtitle("Mean August WUE")+
+  ggtitle(expression(paste("Mean August WUE (g C ",kg^-1," ",H[2],O,")")))+
   geom_polygon(data=switz_outline_RP,aes(x=long, y=lat, group=group),alpha=0,color="black")+
   theme(panel.grid = element_blank(), axis.title = element_blank(), axis.text = element_blank(),
-        axis.ticks = element_blank(), panel.background = element_blank()) +
+        axis.ticks = element_blank(), panel.background = element_blank(),
+        legend.position = "none") +
   scalebar(location = "bottomright", 
            x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84") +
+           dist = 50, dist_unit = "km", transform = TRUE,  model = "WGS84",
+           st.size = 2, border.size = 0.1) +
   north(x.min = 5.958671, x.max = 10.49951, y.min = 45.81269, y.max = 47.80561,
-        symbol = 10) 
+        symbol = 10, location = "topright") + coord_fixed(ratio = 1.5)
 
 # 3 panel June, July, Aug
 WUE_June_July_Aug_3Panel = ggarrange(All_June_WUE_Plot, All_July_WUE_Plot, All_Aug_WUE_Plot,
-                                nrow = 3, ncol = 1)
+                                nrow = 1, ncol = 3)
 
 
 ### end of making raster stacks
@@ -1031,6 +1037,44 @@ carbon13validationdata = carbon13validationdata %>%
 carbon13validationdata_wue = merge(carbon13validationdata, WUE_Data_2019_Means, by = "site.number")
 carbon13validationdata_final = unique(merge(carbon13validationdata_wue, site_species))
 
+# ADDITIONAL POINTS
+New_Point_1 = read.csv("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Extra_Sites/Site_1/WUE/New-Point-18-19-20-ECO4WUE-001-results (1).csv")
+New_Point_1_SDS_LST = read.csv("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Extra_Sites/Site_1/SDS_LST/New-Point-SDS-LST-ECO2LSTE-001-results.csv")
+New_Point_2 = read.csv("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Extra_Sites/Site_2/WUE/Second-New-Point-18-19-20-ECO4WUE-001-results.csv")
+New_Point_2_SDS_LST = read.csv("/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Extra_Sites/Site_2/SDS_LST/Second-Point-SDS-LST-ECO2LSTE-001-results.csv")
+
+# label each site
+New_Point_1$Site = "Site_1"
+New_Point_2$Site = "Site_2"
+# bind
+All_New_Point_WUE_Data = rbind(New_Point_1, New_Point_2)
+All_New_Point_LST_SDS_Data = rbind(New_Point_1_SDS_LST, New_Point_2_SDS_LST)
+
+# create $Unique
+All_New_Point_WUE_Data$Unique = paste(All_New_Point_WUE_Data$Latitude, All_New_Point_WUE_Data$Longitude, 
+                                      All_New_Point_WUE_Data$Date, All_New_Point_WUE_Data$Orbit.Number,
+                                      All_New_Point_WUE_Data$Scene.ID, All_New_Point_WUE_Data$Build.ID)
+
+All_New_Point_LST_SDS_Data$Unique = paste(All_New_Point_LST_SDS_Data$Latitude, All_New_Point_LST_SDS_Data$Longitude, 
+                                           All_New_Point_LST_SDS_Data$Date, All_New_Point_LST_SDS_Data$Orbit.Number,
+                                           All_New_Point_LST_SDS_Data$Scene.ID, All_New_Point_LST_SDS_Data$Build.ID)
+
+# merge
+All_New_Point_Data = merge(All_New_Point_WUE_Data, All_New_Point_LST_SDS_Data, by = "Unique")
+
+# filter by SDS_LST
+All_New_Point_Data_filtered = All_New_Point_Data[which(All_New_Point_Data$ECO2LSTE_001_SDS_QC_MMD == "0b11" &
+                                                 All_New_Point_Data$ECO2LSTE_001_SDS_QC_LST_accuracy != c("0b00","0b01") & 
+                                                 All_New_Point_Data$ECO2LSTE_001_SDS_QC_Mandatory_QA_flags != c("0b11","0b10") & 
+                                                 All_New_Point_Data$ECO2LSTE_001_SDS_QC_Data_quality_flag != c("0b11","0b10")),]
+
+# Filter by WUE < 4
+All_New_Point_Data_final = All_New_Point_Data_filtered[which(All_New_Point_Data_filtered$ECO4WUE_001_Water_Use_Efficiency_WUEavg <= 4),]
+
+All_New_Point_Data_final$ECO4WUE_001_Water_Use_Efficiency_WUEavg
+Site_1 = All_New_Point_Data_filtered[which(All_New_Point_Data_filtered$Site == "Site_1"),]
+Site_2 = All_New_Point_Data_filtered[which(All_New_Point_Data_filtered$Site == "Site_2"),]
+sd(Site_2$ECO4WUE_001_Water_Use_Efficiency_WUEavg)
 
 ######################################################################################################
 ######################################################################################################
@@ -1074,10 +1118,10 @@ data.WUE.ET.final = data.WUE.ET.final %>%
 Swiz_loess_Adjusted_WUE_All = ggplot(data.WUE.ET.final, aes(x = as.POSIXct(m_d,format = "%m-%d"), 
                                                             y = WUE_GPP_by_T, color = `Species Composition`)) +
   geom_point(alpha = 0.5) + geom_smooth(se = FALSE) + theme_bw() + ggtitle(" ") +
-  theme(plot.title = element_text(size = 20, family = "Tahoma"),
-        text = element_text(size = 20, family = "Tahoma"),
-        axis.title = element_text(size = 20),
-        axis.text = element_text(size = 20))  +
+  theme(plot.title = element_text(size = 12, family = "Tahoma"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 12))  +
   xlab("Date") + ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)"))) 
 
 # All Summers 
@@ -1087,7 +1131,7 @@ Swiz_loess_WUE_All = ggplot(data.WUE.ET.final, aes(x = as.POSIXct(m_d,format = "
   theme(plot.title = element_text(size = 14, family = "Tahoma", face = "bold"),
         text = element_text(size = 12, family = "Tahoma"),
         axis.title = element_text(face="bold"),
-        axis.text.x=element_text(size = 11))  +
+        axis.text.x=element_text(size = 11))+
   xlab("Date") + ylab(expression(paste("WUE (g C kg"^"-1 ",H[2],"O)")))
 
 # Summer 2018 WUE
@@ -1136,6 +1180,8 @@ Plot_Swiz_WUE_GPP_ET = ggplot(data.WUE.ET.final, aes(x=WUEavg)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"))
 
+mean(data.WUE.ET.final$WUE_GPP_by_T)
+
 # 2 Panel Image
 Plot_Swiz_Both_WUE = ggarrange(Plot_Swiz_WUE_GPP_ET, Plot_Swiz_WUE_GPP_T,
                                labels = c("A)", "B)"),
@@ -1153,7 +1199,7 @@ GPP.T_Elevation = data.corrected %>%
         text = element_text(size = 11, family = "Tahoma"),
         axis.title = element_text(size = 11),
         axis.text = element_text(size = 11), legend.position="none") + 
-  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
 # slope
 GPP.T_Slope = data.corrected %>%
@@ -1164,7 +1210,7 @@ GPP.T_Slope = data.corrected %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")+ 
-  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
 # aspect
 GPP.T_Aspect = data.corrected %>%
@@ -1175,7 +1221,7 @@ GPP.T_Aspect = data.corrected %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")+ 
-  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
 # temp
 GPP.T_Temp = data.corrected %>%
@@ -1197,7 +1243,7 @@ GPP.T_Precipitation = data.corrected %>%
         text = element_text(size = 11, family = "Tahoma"),
         axis.title = element_text(size = 11),
         axis.text = element_text(size = 11), legend.position="none") + 
-  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
 # Rel. Humidity
 GPP.T_Rel_Humidity = data.corrected %>%
@@ -1219,7 +1265,7 @@ GPP.T_Oxidized_N = data.corrected %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")+ 
-  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
 # reduced n
 GPP.T_Reduced_N = data.corrected %>%
@@ -1230,7 +1276,8 @@ GPP.T_Reduced_N = data.corrected %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")+ 
-  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # n dep
 GPP.T_N_Deposition = data.corrected %>%
@@ -1240,18 +1287,25 @@ GPP.T_N_Deposition = data.corrected %>%
   theme(plot.title = element_text(size = 11, family = "Tahoma"),
         text = element_text(size = 11, family = "Tahoma"),
         axis.title = element_text(size = 11),
-        axis.text = element_text(size = 11), legend.position="none") + 
-  stat_cor(method = "pearson", label.x.npc = 0.65, label.y.npc = 0.95)
+        axis.text = element_text(size = 11), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
+# Panel images
+EF_WUE_6Panel = ggarrange(GPP.T_Elevation, GPP.T_Slope, GPP.T_Aspect,
+                          GPP.T_Temp, GPP.T_Precipitation, GPP.T_Rel_Humidity,
+                          labels = c("A)", "B)", "C)", "D)", "E)", "F)"),
+                          font.label = list(size = 12),
+                          ncol = 3, nrow = 2)
 
+Nitrogen_WUE_4Panel = ggarrange(GPP.T_Oxidized_N, GPP.T_Reduced_N, GPP.T_N_Deposition,
+                                GPP.T_Leaf_Nitrogen, 
+                                labels = c("A)", "B)", "C)", "D)"),
+                                font.label = list(size = 12),
+                                ncol = 2, nrow = 2)
 
-EF_WUE_4Panel = ggarrange(GPP.T_Elevation, GPP.T_Temp, GPP.T_Precipitation,
-                          GPP.T_N_Deposition,
-                               ncol = 1, nrow = 4)
-
-Nitrogen_WUE_3Panel = ggarrange(GPP.T_Oxidized_N, GPP.T_Reduced_N, GPP.T_N_Deposition,
-                                ncol = 1, nrow = 3)
 ###### 9 panel SD
+
 # elevation
 GPP.T_Elevation_SD = data.corrected %>%
   ggplot(aes(elevation,SDGPP.T_Corrected)) +
@@ -1260,7 +1314,9 @@ GPP.T_Elevation_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # slope
 GPP.T_Slope_SD = data.corrected %>%
@@ -1270,7 +1326,9 @@ GPP.T_Slope_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # aspect
 GPP.T_Aspect_SD = data.corrected %>%
@@ -1280,7 +1338,9 @@ GPP.T_Aspect_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # temp
 GPP.T_Temp_SD = data.corrected %>%
@@ -1290,7 +1350,9 @@ GPP.T_Temp_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # precip
 GPP.T_Precipitation_SD = data.corrected %>%
@@ -1300,7 +1362,9 @@ GPP.T_Precipitation_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # Rel. Humidity
 GPP.T_Rel_Humidity_SD = data.corrected %>%
@@ -1310,7 +1374,9 @@ GPP.T_Rel_Humidity_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # oxidized n
 GPP.T_Oxidized_N_SD = data.corrected %>%
@@ -1320,7 +1386,9 @@ GPP.T_Oxidized_N_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # reduced n
 GPP.T_Reduced_N_SD = data.corrected %>%
@@ -1330,7 +1398,9 @@ GPP.T_Reduced_N_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # n dep
 GPP.T_N_Deposition_SD = data.corrected %>%
@@ -1340,7 +1410,9 @@ GPP.T_N_Deposition_SD = data.corrected %>%
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 
 Plot_Swiz_Both_WUE_SD = ggarrange(GPP.T_Elevation_SD, GPP.T_Slope_SD, GPP.T_Aspect_SD, GPP.T_Temp_SD, 
@@ -1354,16 +1426,33 @@ wue_boxplot = ggplot(data.WUE.ET.final, aes(x = `Species Composition`, y = WUE_G
   geom_boxplot(notch=TRUE) +
   labs(y=expression(paste("WUE (g C ",kg^-1," ",H[2],O,")")), 
        x=expression(paste("Species Composition")))+ theme_bw() +
-  theme(plot.title = element_text(size = 17, family = "Tahoma"),
-        text = element_text(size = 17, family = "Tahoma"),
-        axis.title = element_text(size = 17),
-        axis.text = element_text(size = 17), legend.position="none")
+  theme(plot.title = element_text(size = 12, family = "Tahoma"),
+        text = element_text(size = 12, family = "Tahoma"),
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 12), legend.position="none")
 
 ggsave(wue_boxplot, plot = wue_boxplot, device = "pdf",
        path = "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Final_Plots"
       )
 
+# boxplot stats
 ggplot_build(wue_boxplot)$data
+# ANOVA test
+res_aov = aov(WUE_GPP_by_T ~ `Species Composition`, data = data.WUE.ET.final)
+summary(res_aov)
+# histogram
+hist(res_aov$residuals)
+# QQ-plot
+library(car)
+qqPlot(res_aov$residuals,
+       id = FALSE # id = FALSE to remove point identification
+)
+
+# 2 panel image loess + boxplot
+WUE_LOESS_Boxplot = ggarrange(Swiz_loess_Adjusted_WUE_All, wue_boxplot,
+          labels = c("A)", "B)"),
+          font.label = list(size = 12, color = "black"),
+          ncol = 2, nrow = 1)
 
 
 # Leaf Nitrogen
@@ -1376,14 +1465,16 @@ GPP.T_Leaf_Nitrogen = all.data %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.text=element_text(size=15),
-        legend.title=element_text(size=15), legend.position="bottom")
+        legend.title=element_text(size=15), legend.position="none") + 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.accuracy = 0.001, r.accuracy = 0.001)
 
 # Calcium
 GPP.T_Calcium = all.data %>%
   ggplot(aes(Calcium,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
   labs(y=expression(paste("WUE (g C ",kg^-1," ",H[2],O,")")), 
-       x=expression(paste("Leaf Nitrogen")))+ theme_bw() +
+       x=expression(paste("Calcium")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1396,7 +1487,8 @@ all.data$Calcium
 N_Dep_Mean_Nitrogen = data.corrected %>%
   ggplot(aes(total.n.deposition,mean.nitrogen)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean Nitrogen")), x=expression(paste("Nitrogen Deposition"))) + theme_bw() +
+  labs(y=expression(paste("Mean Nitrogen")), 
+       x=expression(paste("Nitrogen Deposition"))) + theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1406,7 +1498,8 @@ N_Dep_Mean_Nitrogen = data.corrected %>%
 N_Dep_Mean_Nitrogen = data.corrected %>%
   ggplot(aes(total.n.deposition,mean.nitrogen)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean Nitrogen")), x=expression(paste("Nitrogen Deposition"))) + theme_bw() +
+  labs(y=expression(paste("Mean Nitrogen")), 
+       x=expression(paste("Nitrogen Deposition"))) + theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1416,7 +1509,8 @@ N_Dep_Mean_Nitrogen = data.corrected %>%
 N_Dep_Mean_Nitrogen = data.corrected %>%
   ggplot(aes(total.n.deposition,mean.nitrogen)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean Nitrogen")), x=expression(paste("Nitrogen Deposition"))) + theme_bw() +
+  labs(y=expression(paste("Mean Nitrogen")), 
+       x=expression(paste("Nitrogen Deposition"))) + theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1427,7 +1521,8 @@ N_Dep_Mean_Nitrogen = data.corrected %>%
 GPP.T_Ozone = GPP.T_Ozone_data %>%
   ggplot(aes(mean.site.avg,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Ozone Site Averages")))+ theme_bw() +
+  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Ozone Site Averages")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1438,19 +1533,22 @@ GPP.T_Ozone = GPP.T_Ozone_data %>%
 GPP.T_2019_Ozone_2019 = GPP.T_2019_Ozone_2019_data %>%
   ggplot(aes(site.avg,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("2019 Ozone Site Averages")))+ theme_bw() +
-  theme(plot.title = element_text(size = 10, family = "Tahoma"),
-        text = element_text(size = 10, family = "Tahoma"),
-        axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
-
+  labs(y=expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("2019 Ozone Site Averages")))+ theme_bw() +
+  theme(plot.title = element_text(size = 15, family = "Tahoma"),
+        text = element_text(size = 15, family = "Tahoma"),
+        axis.title = element_text(size = 15),
+        axis.text = element_text(size = 15), legend.position="none")+ 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.digits = signif(2), r.digits = signif(2)) 
 
 # 4 
 # 2019 WUE x 2019 Leaf N
 GPP.T_2019_Nitrogen_2019 = WUE.2019.Nutrient.2019.data %>%
   ggplot(aes(mean.nitrogen,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Mean 2019 Nitrogen")))+ theme_bw() +
+  labs(y=expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Mean 2019 Nitrogen")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1461,7 +1559,8 @@ GPP.T_2019_Nitrogen_2019 = WUE.2019.Nutrient.2019.data %>%
 GPP.T_Nitrogen_2019 = WUE.Nutrient.2019.data %>%
   ggplot(aes(mean.nitrogen,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Mean 2019 Nitrogen")))+ theme_bw() +
+  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Mean 2019 Nitrogen")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1472,7 +1571,9 @@ GPP.T_Nitrogen_2019 = WUE.Nutrient.2019.data %>%
 GPP.T_Phosphorus_2019 = WUE.Nutrient.2019.data %>%
   ggplot(aes(mean.phosphorus,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Mean 2019 Phosphorus")))+ theme_bw() +
+  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Mean 2019 P (mg ",g^-1," D.M.)")))+ theme_bw() +
+  xlim(0.6,1.72) +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
@@ -1483,62 +1584,81 @@ GPP.T_Phosphorus_2019 = WUE.Nutrient.2019.data %>%
 GPP.T_NP_2019 = WUE.Nutrient.2019.data %>%
   ggplot(aes(mean.NP.ratio,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Mean 2019 N/P")))+ theme_bw() +
+  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Mean 2019 N:P (w/w)")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none") #+ 
+  #stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+         #  p.accuracy = 0.001, r.accuracy = 0.001)
 
 # 8
 # Mean WUE vs 2019 K
 GPP.T_K_2019 = WUE.Nutrient.2019.data %>%
   ggplot(aes(mean.potassium,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Mean 2019 Potassium")))+ theme_bw() +
+  labs(y=expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Mean 2019 K (mg ",g^-1," D.M.)")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none") #+ 
+  #stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           #p.accuracy = 0.001, r.accuracy = 0.001)
 
 # 9
 # Mean WUE vs 2019 Phosphorus
 GPP.T_P_2019 = WUE.Nutrient.2019.data %>%
   ggplot(aes(mean.phosphorus,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Mean 2019 Phosphorus")))+ theme_bw() +
+  labs(y=expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Mean 2019 Phosphorus")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none") + 
+  stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+           p.accuracy = 0.001, r.accuracy = 0.001)
 
 # 10
 # Mean WUE vs 2019 Leaf Manganese
 GPP.T_Mn_2019 = WUE.Nutrient.2019.data %>%
   ggplot(aes(mean.manganese,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("Mean WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("Mean 2019 Manganese")))+ theme_bw() +
+  labs(y=expression(paste("Mean 2019 WUE (g C ",kg^-1," ",H[2],O,")")), 
+       x=expression(paste("Mean 2019 Mn (mg ",g^-1," D.M.)")))+ theme_bw() +
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
-        axis.text = element_text(size = 10), legend.position="none")
+        axis.text = element_text(size = 10), legend.position="none") #+ 
+  #stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
+          #p.accuracy = 0.001, r.accuracy = 0.001)
 
 
-# 9 panel image WUE vs nutrients 
-Plot_WUE_Nutrients_9_Panel = ggarrange(GPP.T_Ozone, GPP.T_2019_Ozone_2019, GPP.T_2019_Nitrogen_2019, 
-                               GPP.T_Nitrogen_2019, GPP.T_Phosphorus_2019,
-                               GPP.T_NP_2019, GPP.T_K_2019, GPP.T_P_2019, GPP.T_Mn_2019,
-                               ncol = 3, nrow = 3)
+# 4 panel image WUE vs nutrients 
+Plot_WUE_Nutrients_4_Panel = ggarrange(GPP.T_NP_2019, GPP.T_Phosphorus_2019,
+                                       GPP.T_K_2019, GPP.T_Mn_2019,
+                                       labels = c("A)", "B)", "C)", "D)"),
+                                       font.label = list(size = 12),
+                               ncol = 2, nrow = 2)
 
 
 # carbon validation data - 2019 site mean WUE as a function of c[i]/c[a]
+install.packages("ggtext")
+library("ggtext")
+
 GPP.T_C13_cica = carbon13validationdata_final %>%
   ggplot(aes(ci.ca,meanGPP.T)) +
   geom_point(alpha=0.8, size=2, aes(color=Species, shape = Species)) +
-  labs(y=expression(paste("2019 WUE (g C ",kg^-1," ",H[2],O,")")), x=expression(paste("C"["i"],"/C"["a"])))+ theme_bw() +
+  labs(y=expression(paste("2019 WUE (g C ",kg^-1," ",H[2],O,")")), x = expression(paste("C"["i"],"/C"["a"])))+ 
+  theme_bw() + 
   theme(plot.title = element_text(size = 10, family = "Tahoma"),
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
+
+
 
 
 install.packages("lme4")
@@ -1564,26 +1684,6 @@ summer_20_plot = plot(mask(Mean_All_Stacks_20, forestmask_RP, inverse = TRUE), c
 all_june_plot = plot(mask(Mean_All_Stacks_June, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
 all_july_plot = plot(mask(Mean_All_Stacks_July, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
 all_Aug_plot = plot(mask(Mean_All_Stacks_Aug, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
-
-
-
-# add northing and scale bar
-# X what stats can you get from a raster stack
-# X across swis forests the mean summer WUE was xxx in 2018, xxx in 2019, etc...
-# X get mean/sd of each summer
-# X make median plots as well 
-# X ci/ca italicized in the plot 
-
-
-
-
-
-
-
-
-
-
-
 
 
 

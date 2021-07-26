@@ -814,8 +814,6 @@ length(unique(data$site.number))
 # Pearson
 cor.test(data$meanGPP.T, data$mean.annual.P)
 
-#(lm(data = data, meanGPP.T ~ mean.annual.P))
-
 # aggregate mean
 aggregate(meanGPP.T ~  Species, data, mean)
 
@@ -1201,6 +1199,14 @@ GPP.T_Elevation = data.corrected %>%
         axis.text = element_text(size = 11), legend.position="none") + 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
+# lm use * first, if not sig then use +...
+install.packages("lme4")
+library("lme4")
+model_WUE_Elevation = lm(MeanGPP.T_Corrected ~ Species + elevation, data = data.corrected)
+model_WUE_Elevation_lmer = lmer(MeanGPP.T_Corrected ~ elevation + (1|Species), data = data.corrected)
+summary(model_WUE_Elevation)
+aov(model_WUE_Elevation)
+
 # slope
 GPP.T_Slope = data.corrected %>%
   ggplot(aes(slope.degree,MeanGPP.T_Corrected)) +
@@ -1211,6 +1217,12 @@ GPP.T_Slope = data.corrected %>%
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
+
+# lm
+model_WUE_Slope = lm(MeanGPP.T_Corrected ~ Species + slope.degree, data = data.corrected)
+model_WUE_Slope_lmer = lmer(MeanGPP.T_Corrected ~ slope.degree + (1|Species), data = data.corrected)
+summary(model_WUE_Slope)
+aov(model_WUE_Slope)
 
 # aspect
 GPP.T_Aspect = data.corrected %>%
@@ -1223,6 +1235,12 @@ GPP.T_Aspect = data.corrected %>%
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
+# lm
+model_WUE_Aspect = lm(MeanGPP.T_Corrected ~ Species + aspect.degree, data = data.corrected)
+model_WUE_Aspect_lmer = lmer(MeanGPP.T_Corrected ~ aspect.degree + (1|Species), data = data.corrected)
+summary(model_WUE_Aspect)
+aov(model_WUE_Aspect)
+
 # temp
 GPP.T_Temp = data.corrected %>%
   ggplot(aes(mean.annual.T,MeanGPP.T_Corrected)) +
@@ -1233,6 +1251,12 @@ GPP.T_Temp = data.corrected %>%
         axis.title = element_text(size = 11),
         axis.text = element_text(size = 11), legend.position="none") + 
   stat_cor(method = "pearson", label.y.npc = 0.95)
+
+# lm
+model_WUE_Temp = lm(MeanGPP.T_Corrected ~ Species * mean.annual.T, data = data.corrected)
+model_WUE_Temp_lmer = lmer(MeanGPP.T_Corrected ~ mean.annual.T + (1|Species), data = data.corrected)
+summary(model_WUE_Temp)
+aov(model_WUE_Temp)
 
 # precip
 GPP.T_Precipitation = data.corrected %>%
@@ -1245,6 +1269,12 @@ GPP.T_Precipitation = data.corrected %>%
         axis.text = element_text(size = 11), legend.position="none") + 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
 
+# lm
+model_WUE_Precip = lm(MeanGPP.T_Corrected ~ Species + mean.annual.P, data = data.corrected)
+model_WUE_Precip_lmer = lmer(MeanGPP.T_Corrected ~ mean.annual.P + (1|Species), data = data.corrected)
+summary(model_WUE_Precip)
+aov(model_WUE_Precip)
+
 # Rel. Humidity
 GPP.T_Rel_Humidity = data.corrected %>%
   ggplot(aes(mean.annual.RH,MeanGPP.T_Corrected)) +
@@ -1256,6 +1286,12 @@ GPP.T_Rel_Humidity = data.corrected %>%
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.y.npc = 0.95)
 
+# lm
+model_WUE_RH = lm(MeanGPP.T_Corrected ~ Species + mean.annual.RH, data = data.corrected)
+model_WUE_RH_lmer = lmer(MeanGPP.T_Corrected ~ mean.annual.RH + (1|Species), data = data.corrected)
+summary(model_WUE_RH)
+aov(model_WUE_RH)
+
 # oxidized n
 GPP.T_Oxidized_N = data.corrected %>%
   ggplot(aes(oxidized.nitrogen,MeanGPP.T_Corrected)) +
@@ -1266,6 +1302,12 @@ GPP.T_Oxidized_N = data.corrected %>%
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95)
+
+# lm
+model_WUE_Oxidized_N = lm(MeanGPP.T_Corrected ~ Species + oxidized.nitrogen, data = data.corrected)
+model_WUE_Oxidized_N_lmer = lmer(MeanGPP.T_Corrected ~ oxidized.nitrogen + (1|Species), data = data.corrected)
+summary(model_WUE_Oxidized_N)
+aov(model_WUE_Oxidized_N)
 
 # reduced n
 GPP.T_Reduced_N = data.corrected %>%
@@ -1279,6 +1321,12 @@ GPP.T_Reduced_N = data.corrected %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
 
+# lm
+model_WUE_Reduced_N = lm(MeanGPP.T_Corrected ~ Species * reduced.nitrogen, data = data.corrected)
+model_WUE_Reduced_N_lmer = lmer(MeanGPP.T_Corrected ~ reduced.nitrogen + (1|Species), data = data.corrected)
+summary(model_WUE_Reduced_N)
+aov(model_WUE_Reduced_N)
+
 # n dep
 GPP.T_N_Deposition = data.corrected %>%
   ggplot(aes(total.n.deposition,MeanGPP.T_Corrected)) +
@@ -1290,6 +1338,12 @@ GPP.T_N_Deposition = data.corrected %>%
         axis.text = element_text(size = 11), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
+
+# lm
+model_WUE_N_Deposition = lm(MeanGPP.T_Corrected ~ Species + total.n.deposition, data = data.corrected)
+model_WUE_N_Deposition_lmer = lmer(MeanGPP.T_Corrected ~ total.n.deposition + (1|Species), data = data.corrected)
+summary(model_WUE_N_Deposition)
+aov(model_WUE_N_Deposition)
 
 # Panel images
 EF_WUE_6Panel = ggarrange(GPP.T_Elevation, GPP.T_Slope, GPP.T_Aspect,
@@ -1318,6 +1372,12 @@ GPP.T_Elevation_SD = data.corrected %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
 
+# lm
+model_WUE_Elevation_SD = lm(SDGPP.T_Corrected ~ Species + elevation, data = data.corrected)
+model_WUE_Elevation_SD_lmer = lmer(SDGPP.T_Corrected ~ elevation + (1|Species), data = data.corrected)
+summary(model_WUE_Elevation)
+aov(model_WUE_Elevation)
+
 # slope
 GPP.T_Slope_SD = data.corrected %>%
   ggplot(aes(slope.degree,SDGPP.T_Corrected)) +
@@ -1329,6 +1389,12 @@ GPP.T_Slope_SD = data.corrected %>%
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
+
+# lm
+model_WUE_Slope_SD = lm(SDGPP.T_Corrected ~ Species + slope.degree, data = data.corrected)
+model_WUE_Slope_SD_lmer = lmer(SDGPP.T_Corrected ~ slope.degree + (1|Species), data = data.corrected)
+summary(model_WUE_Slope_SD)
+aov(model_WUE_Slope_SD)
 
 # aspect
 GPP.T_Aspect_SD = data.corrected %>%
@@ -1342,6 +1408,12 @@ GPP.T_Aspect_SD = data.corrected %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
 
+# lm
+model_WUE_Aspect_SD = lm(SDGPP.T_Corrected ~ Species + aspect.degree, data = data.corrected)
+model_WUE_Aspect_SD_lmer = lmer(SDGPP.T_Corrected ~ aspect.degree + (1|Species), data = data.corrected)
+summary(model_WUE_Aspect_SD)
+aov(model_WUE_Aspect_SD)
+
 # temp
 GPP.T_Temp_SD = data.corrected %>%
   ggplot(aes(mean.annual.T,SDGPP.T_Corrected)) +
@@ -1353,6 +1425,12 @@ GPP.T_Temp_SD = data.corrected %>%
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
+
+# lm
+model_WUE_Temp_SD = lm(SDGPP.T_Corrected ~ Species + mean.annual.T, data = data.corrected)
+model_WUE_Temp_SD_lmer = lmer(SDGPP.T_Corrected ~ mean.annual.T + (1|Species), data = data.corrected)
+summary(model_WUE_Temp_SD)
+aov(model_WUE_Temp_SD)
 
 # precip
 GPP.T_Precipitation_SD = data.corrected %>%
@@ -1366,6 +1444,12 @@ GPP.T_Precipitation_SD = data.corrected %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
 
+# lm
+model_WUE_Precipitation_SD = lm(SDGPP.T_Corrected ~ Species + mean.annual.P, data = data.corrected)
+model_WUE_Precipitation_SD_lmer = lmer(SDGPP.T_Corrected ~ mean.annual.P + (1|Species), data = data.corrected)
+summary(model_WUE_Precipitation_SD)
+aov(model_WUE_Precipitation_SD)
+
 # Rel. Humidity
 GPP.T_Rel_Humidity_SD = data.corrected %>%
   ggplot(aes(mean.annual.RH,SDGPP.T_Corrected)) +
@@ -1377,6 +1461,12 @@ GPP.T_Rel_Humidity_SD = data.corrected %>%
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
+
+# lm
+model_WUE_Rel_Humidity_SD = lm(SDGPP.T_Corrected ~ Species + mean.annual.RH, data = data.corrected)
+model_WUE_Rel_Humidity_SD_lmer = lmer(SDGPP.T_Corrected ~ mean.annual.RH + (1|Species), data = data.corrected)
+summary(model_WUE_Rel_Humidity_SD)
+aov(model_WUE_Rel_Humidity_SD)
 
 # oxidized n
 GPP.T_Oxidized_N_SD = data.corrected %>%
@@ -1390,6 +1480,12 @@ GPP.T_Oxidized_N_SD = data.corrected %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
 
+# lm
+model_WUE_Oxidized_N_SD = lm(SDGPP.T_Corrected ~ Species + oxidized.nitrogen, data = data.corrected)
+model_WUE_Oxidized_N_SD_lmer = lmer(SDGPP.T_Corrected ~ oxidized.nitrogen + (1|Species), data = data.corrected)
+summary(model_WUE_Oxidized_N_SD)
+aov(model_WUE_Oxidized_N_SD)
+
 # reduced n
 GPP.T_Reduced_N_SD = data.corrected %>%
   ggplot(aes(reduced.nitrogen,SDGPP.T_Corrected)) +
@@ -1401,6 +1497,12 @@ GPP.T_Reduced_N_SD = data.corrected %>%
         axis.text = element_text(size = 10), legend.position="none")+ 
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
+
+# lm
+model_WUE_Reduced_N_SD = lm(SDGPP.T_Corrected ~ Species + reduced.nitrogen, data = data.corrected)
+model_WUE_Reduced_N_SD_lmer = lmer(SDGPP.T_Corrected ~ reduced.nitrogen + (1|Species), data = data.corrected)
+summary(model_WUE_Reduced_N_SD)
+aov(model_WUE_Reduced_N_SD)
 
 # n dep
 GPP.T_N_Deposition_SD = data.corrected %>%
@@ -1414,6 +1516,11 @@ GPP.T_N_Deposition_SD = data.corrected %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
 
+# lm
+model_WUE_N_Deposition_SD = lm(SDGPP.T_Corrected ~ Species + total.n.deposition, data = data.corrected)
+model_WUE_N_Deposition_SD_lmer = lmer(SDGPP.T_Corrected ~ total.n.deposition + (1|Species), data = data.corrected)
+summary(model_WUE_N_Deposition_SD)
+aov(model_WUE_N_Deposition_SD)
 
 Plot_Swiz_Both_WUE_SD = ggarrange(GPP.T_Elevation_SD, GPP.T_Slope_SD, GPP.T_Aspect_SD, GPP.T_Temp_SD, 
                                   GPP.T_Precipitation_SD, GPP.T_Rel_Humidity_SD, GPP.T_Oxidized_N_SD, 
@@ -1435,13 +1542,19 @@ ggsave(wue_boxplot, plot = wue_boxplot, device = "pdf",
        path = "/Users/brandonbernardo/Dropbox/NASA-ECOSTRESS/BernardoProject/Switzerland/Final_Plots"
       )
 
+beech_spruce_ex = data.WUE.ET.final[which(data.WUE.ET.final$`Species Composition` == "Beech & Spruce"),]
+sd(spruce_ex$WUE_GPP_by_T)
+
 # boxplot stats
 ggplot_build(wue_boxplot)$data
+
 # ANOVA test
 res_aov = aov(WUE_GPP_by_T ~ `Species Composition`, data = data.WUE.ET.final)
 summary(res_aov)
+
 # histogram
 hist(res_aov$residuals)
+
 # QQ-plot
 library(car)
 qqPlot(res_aov$residuals,
@@ -1453,7 +1566,6 @@ WUE_LOESS_Boxplot = ggarrange(Swiz_loess_Adjusted_WUE_All, wue_boxplot,
           labels = c("A)", "B)"),
           font.label = list(size = 12, color = "black"),
           ncol = 2, nrow = 1)
-
 
 # Leaf Nitrogen
 GPP.T_Leaf_Nitrogen = all.data %>%
@@ -1469,6 +1581,12 @@ GPP.T_Leaf_Nitrogen = all.data %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.accuracy = 0.001, r.accuracy = 0.001)
 
+# lm
+model_WUE_Leaf_Nitrogen = lm(meanGPP.T ~ Species * Leaf.Nitrogen, data = all.data)
+model_WUE_Leaf_Nitrogen_lmer = lmer(meanGPP.T ~ Leaf.Nitrogen + (1|Species), data = all.data)
+summary(model_WUE_Leaf_Nitrogen)
+aov(model_WUE_Leaf_Nitrogen)
+
 # Calcium
 GPP.T_Calcium = all.data %>%
   ggplot(aes(Calcium,meanGPP.T)) +
@@ -1480,6 +1598,12 @@ GPP.T_Calcium = all.data %>%
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
 all.data$Calcium
+
+# lm - need?
+model_WUE_Leaf_Calcium = lm(meanGPP.T ~ Species * Calcium, data = all.data)
+model_WUE_Leaf_Calcium_lmer = lmer(meanGPP.T ~ Calcium + (1|Species), data = all.data)
+summary(model_WUE_Leaf_Calcium)
+aov(model_WUE_Leaf_Calcium)
 
 # Requested Plots
 # 1
@@ -1493,6 +1617,12 @@ N_Dep_Mean_Nitrogen = data.corrected %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
+
+# lm - Need?
+model_N_Leaf_Calcium = lm(mean.nitrogen ~ Species * total.n.deposition, data = data.corrected)
+model_N_Leaf_Calcium_lmer = lmer(mean.nitrogen ~ total.n.deposition + (1|Species), data = data.corrected)
+summary(model_N_Leaf_Calcium)
+aov(model_N_Leaf_Calcium)
 
 # Mean leaf N x ammonium - MISSING
 N_Dep_Mean_Nitrogen = data.corrected %>%
@@ -1528,6 +1658,12 @@ GPP.T_Ozone = GPP.T_Ozone_data %>%
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
 
+# lm 
+model_WUE_Leaf_Ozone = lm(meanGPP.T ~ Species + mean.site.avg, data = GPP.T_Ozone_data)
+model_WUE_Leaf_Ozone_lmer = lmer(meanGPP.T ~ mean.site.avg + (1|Species), data = GPP.T_Ozone_data)
+summary(model_WUE_Leaf_Ozone)
+aov(model_WUE_Leaf_Ozone)
+
 # 3 
 # 2019 WUE x 2019 mean ozone - not by species
 GPP.T_2019_Ozone_2019 = GPP.T_2019_Ozone_2019_data %>%
@@ -1542,6 +1678,12 @@ GPP.T_2019_Ozone_2019 = GPP.T_2019_Ozone_2019_data %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.digits = signif(2), r.digits = signif(2)) 
 
+# lm 
+model_WUE2019_Leaf_Ozone2019 = lm(meanGPP.T ~ Species + site.avg, data = GPP.T_2019_Ozone_2019_data)
+model_WUE2019_Leaf_Ozone2019_lmer = lmer(meanGPP.T ~ site.avg + (1|Species), data = GPP.T_2019_Ozone_2019_data)
+summary(model_WUE2019_Leaf_Ozone2019)
+aov(model_WUE2019_Leaf_Ozone2019)
+
 # 4 
 # 2019 WUE x 2019 Leaf N
 GPP.T_2019_Nitrogen_2019 = WUE.2019.Nutrient.2019.data %>%
@@ -1553,6 +1695,13 @@ GPP.T_2019_Nitrogen_2019 = WUE.2019.Nutrient.2019.data %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
+
+# lm 
+model_WUE2019_Nitrogen2019 = lm(meanGPP.T ~ Species + mean.nitrogen, data = WUE.2019.Nutrient.2019.data)
+model_WUE2019_Nitrogen2019_lmer = lmer(meanGPP.T ~ mean.nitrogen + (1|Species), data = WUE.2019.Nutrient.2019.data)
+summary(model_WUE2019_Nitrogen2019)
+aov(model_WUE2019_Nitrogen2019)
+
 
 # 5 
 # Mean WUE vs 2019 Leaf N
@@ -1566,6 +1715,12 @@ GPP.T_Nitrogen_2019 = WUE.Nutrient.2019.data %>%
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
 
+# lm 
+model_WUE_Nitrogen2019 = lm(meanGPP.T ~ Species + mean.nitrogen, data = WUE.Nutrient.2019.data)
+model_WUE_Nitrogen2019_lmer = lmer(meanGPP.T ~ mean.nitrogen + (1|Species), data = WUE.Nutrient.2019.data)
+summary(model_WUE_Nitrogen2019)
+aov(model_WUE_Nitrogen2019)
+
 # 6
 # Mean WUE vs 2019 Leaf P
 GPP.T_Phosphorus_2019 = WUE.Nutrient.2019.data %>%
@@ -1578,6 +1733,12 @@ GPP.T_Phosphorus_2019 = WUE.Nutrient.2019.data %>%
         text = element_text(size = 10, family = "Tahoma"),
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
+
+# lm 
+model_WUE_Phosphorus2019 = lm(meanGPP.T ~ Species + mean.phosphorus, data = WUE.Nutrient.2019.data)
+model_WUE_Phosphorus2019_lmer = lmer(meanGPP.T ~ mean.phosphorus + (1|Species), data = WUE.Nutrient.2019.data)
+summary(model_WUE_Nitrogen2019)
+aov(model_WUE_Nitrogen2019)
 
 # 7
 # Mean WUE vs 2019 N/P
@@ -1593,6 +1754,13 @@ GPP.T_NP_2019 = WUE.Nutrient.2019.data %>%
   #stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
          #  p.accuracy = 0.001, r.accuracy = 0.001)
 
+# lm 
+model_WUE_NP2019 = lm(meanGPP.T ~ Species + mean.NP.ratio, data = WUE.Nutrient.2019.data)
+model_WUE_NP2019_lmer = lmer(meanGPP.T ~ mean.NP.ratio + (1|Species), data = WUE.Nutrient.2019.data)
+summary(model_WUE_NP2019)
+aov(model_WUE_NP2019)
+
+
 # 8
 # Mean WUE vs 2019 K
 GPP.T_K_2019 = WUE.Nutrient.2019.data %>%
@@ -1606,6 +1774,12 @@ GPP.T_K_2019 = WUE.Nutrient.2019.data %>%
         axis.text = element_text(size = 10), legend.position="none") #+ 
   #stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            #p.accuracy = 0.001, r.accuracy = 0.001)
+
+# lm 
+model_WUE_K2019 = lm(meanGPP.T ~ Species + mean.potassium, data = WUE.Nutrient.2019.data)
+model_WUE_K2019_lmer = lmer(meanGPP.T ~ mean.potassium + (1|Species), data = WUE.Nutrient.2019.data)
+summary(model_WUE_K2019)
+aov(model_WUE_K2019)
 
 # 9
 # Mean WUE vs 2019 Phosphorus
@@ -1621,6 +1795,12 @@ GPP.T_P_2019 = WUE.Nutrient.2019.data %>%
   stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
            p.accuracy = 0.001, r.accuracy = 0.001)
 
+# lm 
+model_WUE_P2019 = lm(meanGPP.T ~ Species + mean.phosphorus, data = WUE.Nutrient.2019.data)
+model_WUE_P2019_lmer = lmer(meanGPP.T ~ mean.phosphorus + (1|Species), data = WUE.Nutrient.2019.data)
+summary(model_WUE_P2019)
+aov(model_WUE_P2019)
+
 # 10
 # Mean WUE vs 2019 Leaf Manganese
 GPP.T_Mn_2019 = WUE.Nutrient.2019.data %>%
@@ -1634,6 +1814,11 @@ GPP.T_Mn_2019 = WUE.Nutrient.2019.data %>%
         axis.text = element_text(size = 10), legend.position="none") #+ 
   #stat_cor(method = "pearson", label.x.npc = 0.55, label.y.npc = 0.95,
           #p.accuracy = 0.001, r.accuracy = 0.001)
+# lm 
+model_WUE_Mn2019 = lm(meanGPP.T ~ Species + mean.manganese, data = WUE.Nutrient.2019.data)
+model_WUE_Mn2019_lmer = lmer(meanGPP.T ~ mean.manganese + (1|Species), data = WUE.Nutrient.2019.data)
+summary(model_WUE_Mn2019)
+aov(model_WUE_Mn2019)
 
 
 # 4 panel image WUE vs nutrients 
@@ -1658,15 +1843,13 @@ GPP.T_C13_cica = carbon13validationdata_final %>%
         axis.title = element_text(size = 10),
         axis.text = element_text(size = 10), legend.position="none")
 
+# lm 
+model_WUE_C13_cica = lm(meanGPP.T ~ Species + ci.ca, data = carbon13validationdata_final)
+model_WUE_C13_cica_lmer = lmer(meanGPP.T ~ ci.ca + (1|Species), data = carbon13validationdata_final)
+summary(model_WUE_C13_cica)
+aov(model_WUE_C13_cica)
 
 
-
-install.packages("lme4")
-library(lme4)
-
-model = lmer(meanGPP.T ~ ci.ca + (1 + ci.ca|Species),
-             data = carbon13validationdata_final)
-summary(model)
 
 
 # plot swiz wue plots
@@ -1684,11 +1867,4 @@ summer_20_plot = plot(mask(Mean_All_Stacks_20, forestmask_RP, inverse = TRUE), c
 all_june_plot = plot(mask(Mean_All_Stacks_June, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
 all_july_plot = plot(mask(Mean_All_Stacks_July, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
 all_Aug_plot = plot(mask(Mean_All_Stacks_Aug, forestmask_RP, inverse = TRUE), col= brewer.pal(9,"RdYlBu"))
-
-
-
-
-
-
-
 
